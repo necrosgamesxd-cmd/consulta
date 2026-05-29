@@ -174,13 +174,13 @@ def extraer_texto_pdf(file_bytes):
     Si el PDF tiene poco texto (escaneado/imagen), usa OCR con Tesseract.
     """
     try:
-        # Intentar extraer texto con PyPDF3 primero
-        from PyPDF3 import PdfFileReader
+        # Intentar extraer texto con pypdf primero
+        from pypdf import PdfReader
         pdf_file = io.BytesIO(file_bytes)
-        reader = PdfFileReader(pdf_file)
+        reader = PdfReader(pdf_file)
         texto = []
-        for i in range(reader.numPages):
-            page = reader.getPage(i)
+        for i in range(len(reader.pages)):
+            page = reader.pages[i]
             page_text = page.extract_text() or ""
             texto.append(page_text)
         resultado = "\n\n".join(texto).strip()
@@ -191,7 +191,7 @@ def extraer_texto_pdf(file_bytes):
 
         return resultado if resultado else _ocr_pdf(file_bytes)
     except Exception as e:
-        # Fallback a OCR si PyPDF3 falla
+        # Fallback a OCR si pypdf falla
         try:
             return _ocr_pdf(file_bytes)
         except Exception:
@@ -217,7 +217,7 @@ def analizar_proyecto_por_nombre(nombre):
     para generar una descripción detallada.
     Retorna (descripcion, resultados_web).
     """
-    query = f"{nombre} capitalizarme"
+    query = f"{nombre} capitalizarme.com"
     resultados = buscar_en_web(query)
 
     if resultados and len(resultados) > 0 and "error" not in resultados[0]:
