@@ -1,0 +1,47 @@
+[
+  {
+    "id": "d9a2ec15-d0b6-4e4b-86ff-e61673e5305c",
+    "proyecto_id": "d236c998-5d8a-4588-b93d-15853636da36",
+    "nombre_proyecto": "Downtown San Martin",
+    "mes": "promo junio ciber",
+    "descripcion_promocion": "Tipología: Estudio, Bono Pie: 0.1, A.G: 2 años XL, Otras Promos: Bono amoblado si va sin AG, Reserva a $0: Si",
+    "archivo_original": "Proyectos Cyber Junio.xlsx",
+    "created_at": "2026-05-27T21:25:52.490995"
+  },
+  {
+    "id": "826b3002-e924-4f5c-bf01-6e277aaab5e2",
+    "proyecto_id": "8f7be250-71cc-4d46-8b39-bfe215d48a8e",
+    "nombre_proyecto": "Pionera Buzeta",
+    "mes": "promo junio ciber",
+    "descripcion_promocion": "Tipología: Estudio, Bono Pie: 0.09, A.G: 2 años (min 200UF crédito pistos), Otras Promos: Gift Card de $200.000 por promesa firmada, Reserva a $0: Si",
+    "archivo_original": "Proyectos Cyber Junio.xlsx",
+    "created_at": "2026-05-27T21:25:52.491692"
+  },
+  {
+    "id": "b7aee467-4700-44e8-a4de-1a9e9df5310f",
+    "proyecto_id": "2a8965cc-018e-461e-8887-ce98d1a4f737",
+    "nombre_proyecto": "Esmeralda 6548",
+    "mes": "promo junio ciber",
+    "descripcion_promocion": "Tipología: Estudio, Bono Pie: 0.13, A.G: -, Otras Promos: Crédito en hasta 24 cuotas, Reserva a $0: Si",
+    "archivo_original": "Proyectos Cyber Junio.xlsx",
+    "created_at": "2026-05-27T21:25:52.492215"
+  },
+  {
+    "id": "9844891b-cfa6-4364-a5e8-f3086ff0d00e",
+    "proyecto_id": "63832e9f-1579-4a3d-a98d-098bc7bb85f9",
+    "nombre_proyecto": "Serrano 562",
+    "mes": "promo junio ciber",
+    "descripcion_promocion": "Tipología: 1d1b, Bono Pie: 0.1, A.G: -, Otras Promos: Crédito y arriendo garantizado en paralaleo hasta el 30/06/2031, Reserva a $0: Si",
+    "archivo_original": "Proyectos Cyber Junio.xlsx",
+    "created_at": "2026-05-27T21:25:52.492753"
+  },
+  {
+    "id": "21f93051-d5c7-4825-a4fd-a8b03e672b16",
+    "proyecto_id": "776188fd-1db3-4a84-ab04-efb71186da20",
+    "nombre_proyecto": "Rosas 1444",
+    "mes": "promo junio ciber",
+    "descripcion_promocion": "Tipología: 1d1b, Bono Pie: 0.1, A.G: 4 años y administración gratuita, Otras Promos: PROMOCION DEPTO 2D2B + ESTACIONAMIENTO= UF 4.000 ( PISO 2 AL 8), Reserva a $0: No",
+    "archivo_original": "Proyectos Cyber Junio.xlsx",
+    "created_at": "2026-05-27T21:25:52.493309"
+  }
+]
