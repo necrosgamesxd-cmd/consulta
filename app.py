@@ -88,35 +88,6 @@ with st.sidebar:
     else:
         st.success(f"✅ {config['name']} conectado", icon="✅")
 
-    # ===== HOT-SWAP: Configuración runtime de API Keys =====
-    with st.expander("🔑 Configurar API Keys", expanded=False):
-        for p_key, p_cfg in PROVIDERS.items():
-            session_key = f"runtime_api_key_{p_key}"
-            label = f"{p_cfg['name']}"
-            if p_key == selected_provider:
-                label += " (activo)"
-
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.text_input(
-                    label,
-                    type="password",
-                    value=st.session_state.get(session_key, ""),
-                    key=f"input_{session_key}",
-                    placeholder=f"Pega tu {p_cfg['api_key_env']}",
-                    help="Vacío = usa la del archivo .env",
-                )
-            with col2:
-                if st.button("💾", key=f"btn_{session_key}", help="Guardar esta key"):
-                    st.session_state[session_key] = st.session_state[f"input_{session_key}"]
-                    st.rerun()
-
-            # Botón para limpiar (volver a .env)
-            if st.session_state.get(session_key):
-                if st.button("↩ Usar .env", key=f"reset_{session_key}"):
-                    st.session_state[session_key] = ""
-                    st.rerun()
-
     st.markdown("---")
     st.caption(f"Powered by {config['name']}")
 

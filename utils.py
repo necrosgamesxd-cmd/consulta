@@ -83,17 +83,12 @@ def get_model_for_provider(tier="super", provider=None):
 
 
 def _get_api_key(provider=None):
-    """Obtiene la API key: primero desde session_state (runtime), luego desde .env."""
+    """Obtiene la API key: st.secrets > variable de entorno."""
     provider = provider or get_active_provider()
     config = get_provider_config(provider)
+    env_var = config["api_key_env"]
 
-    # Prioridad: runtime en session_state > variable de entorno
-    session_key = f"runtime_api_key_{provider}"
-    runtime_key = st.session_state.get(session_key, "")
-    if runtime_key:
-        return runtime_key
-
-    return os.getenv(config["api_key_env"], "")
+    return os.getenv(env_var) or st.secrets.get(env_var, "")
 
 
 def get_ai_client(provider=None):
