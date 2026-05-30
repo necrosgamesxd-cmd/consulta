@@ -14,6 +14,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+from backup import iniciar_backup_periodico
+iniciar_backup_periodico()
+
 st.markdown(
     """
     <style>
@@ -90,6 +93,41 @@ with st.sidebar:
 
     st.markdown("---")
     st.caption(f"Powered by {config['name']}")
+
+    # ===== BACKUP / GIT =====
+    st.markdown("### 💾 Backup")
+    ultimo = st.session_state.get("ultimo_backup", {})
+    if ultimo:
+        if ultimo["ok"]:
+            st.success(f"✅ {ultimo['timestamp'][:19]}", icon="✅")
+        else:
+            st.warning(f"⚠️ {ultimo['timestamp'][:19]}", icon="⚠️")
+
+    col_b1, col_b2 = st.columns(2)
+    with col_b1:
+        if st.button("📸 Snapshot local", use_container_width=True, type="secondary", help="Copia de respaldo local antes de hacer cambios"):
+            from backup import crear_snapshot
+            ok, msg = crear_snapshot()
+            if ok:
+                st.success(msg)
+            else:
+                st.error(msg)
+            st.rerun()
+    with col_b2:
+        if st.button("📤 GitHub", use_container_width=True, type="secondary", help="Subir datos a GitHub ahora"):
+            with st.spinner("Subiendo a GitHub..."):
+                from backup import commit_y_push
+                ok, msg = commit_y_push(mensaje="Backup manual desde la app")
+                st.session_state["ultimo_backup"] = {
+                    "ok": ok,
+                    "mensaje": msg,
+                    "timestamp": __import__("datetime").datetime.now().isoformat(),
+                }
+                if ok:
+                    st.success(msg)
+                else:
+                    st.error(msg)
+                st.rerun()
 
 # ===== NAVEGACIÓN PROFESIONAL =====
 pages = {

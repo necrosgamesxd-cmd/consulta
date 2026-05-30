@@ -7,6 +7,9 @@ import json
 import os
 import uuid
 from datetime import datetime
+import threading
+
+_BACKUP_ENABLED = True
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 PROYECTOS_FILE = os.path.join(DATA_DIR, "proyectos.json")
@@ -32,10 +35,31 @@ def _cargar_json(filepath):
 
 
 def _guardar_json(filepath, data):
-    """Guarda datos en un archivo JSON."""
+    """Guarda datos en un archivo JSON con copia de seguridad."""
     _asegurar_directorio()
+    # Crear backup del archivo actual antes de sobrescribir
+    if os.path.exists(filepath):
+        backup_path = filepath + f".bak.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        try:
+            import shutil
+            shutil.copy2(filepath, backup_path)
+        except Exception:
+            pass
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+    _backup_async()
+
+
+def _backup_async():
+    """Ejecuta backup en un hilo separado para no bloquear la UI."""
+    if not _BACKUP_ENABLED:
+        return
+    try:
+        from backup import auto_backup
+        t = threading.Thread(target=auto_backup, daemon=True)
+        t.start()
+    except Exception:
+        pass
 
 
 # ========== PROYECTOS ==========
