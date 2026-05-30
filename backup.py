@@ -85,11 +85,17 @@ def _configurar_remote():
     return True, ""
 
 
+def _configurar_git_user():
+    _git("config", "user.email", "consultor@inmobiliario.app")
+    _git("config", "user.name", "Consultor Inmobiliario")
+
+
 def commit_y_push(mensaje=None):
     if not _esperar_lock():
         _guardar_log(f"Intento de backup: bloqueado por .git/index.lock")
         return False, "⚠️ Git ocupado. Espera unos segundos y vuelve a intentar."
 
+    _configurar_git_user()
     ok_remote, err_remote = _configurar_remote()
     if not ok_remote:
         _guardar_log("Error configurar remote", err_remote)
