@@ -7,9 +7,6 @@ import json
 import os
 import uuid
 from datetime import datetime
-import threading
-
-_BACKUP_ENABLED = True
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 PROYECTOS_FILE = os.path.join(DATA_DIR, "proyectos.json")
@@ -47,19 +44,6 @@ def _guardar_json(filepath, data):
             pass
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    _backup_async()
-
-
-def _backup_async():
-    """Ejecuta backup en un hilo separado para no bloquear la UI."""
-    if not _BACKUP_ENABLED:
-        return
-    try:
-        from backup import auto_backup
-        t = threading.Thread(target=auto_backup, daemon=True)
-        t.start()
-    except Exception:
-        pass
 
 
 # ========== PROYECTOS ==========

@@ -14,9 +14,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-from backup import iniciar_backup_periodico
-iniciar_backup_periodico()
-
 st.markdown(
     """
     <style>
@@ -96,38 +93,44 @@ with st.sidebar:
 
     # ===== BACKUP / GIT =====
     st.markdown("### 💾 Backup")
-    ultimo = st.session_state.get("ultimo_backup", {})
+
+    ultimo = st.session_state.get("ultimo_backup")
     if ultimo:
         if ultimo["ok"]:
-            st.success(f"✅ {ultimo['timestamp'][:19]}", icon="✅")
+            st.success(f"✅ {ultimo['timestamp'][:19]}")
         else:
-            st.warning(f"⚠️ {ultimo['timestamp'][:19]}", icon="⚠️")
+            st.warning(f"⚠️ {ultimo['timestamp'][:19]}")
+            with st.expander("🔍 Ver error completo"):
+                st.code(ultimo.get("error", ultimo["mensaje"]))
 
     col_b1, col_b2 = st.columns(2)
     with col_b1:
-        if st.button("📸 Snapshot local", use_container_width=True, type="secondary", help="Copia de respaldo local antes de hacer cambios"):
+        if st.button("📸 Snapshot local", use_container_width=True, type="secondary"):
             from backup import crear_snapshot
             ok, msg = crear_snapshot()
             if ok:
-                st.success(msg)
+                st.toast(msg, icon="✅")
             else:
-                st.error(msg)
-            st.rerun()
+                st.toast(msg, icon="❌")
     with col_b2:
-        if st.button("📤 GitHub", use_container_width=True, type="secondary", help="Subir datos a GitHub ahora"):
+        if st.button("📤 Subir a GitHub", use_container_width=True, type="secondary"):
             with st.spinner("Subiendo a GitHub..."):
                 from backup import commit_y_push
                 ok, msg = commit_y_push(mensaje="Backup manual desde la app")
                 st.session_state["ultimo_backup"] = {
                     "ok": ok,
                     "mensaje": msg,
+                    "error": msg,
                     "timestamp": __import__("datetime").datetime.now().isoformat(),
                 }
                 if ok:
+                    st.toast(msg, icon="✅")
                     st.success(msg)
                 else:
+                    st.toast(msg, icon="❌")
                     st.error(msg)
-                st.rerun()
+                    with st.expander("🔍 Ver error completo"):
+                        st.code(msg)
 
 # ===== NAVEGACIÓN PROFESIONAL =====
 pages = {
