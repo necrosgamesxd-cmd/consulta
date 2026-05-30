@@ -154,6 +154,154 @@ with st.expander("➕ Agregar nuevo proyecto", expanded=False):
 st.markdown("---")
 st.markdown("## Proyectos registrados")
 
+
+def _generar_ficha_proyecto_html(p):
+    """Genera un reporte HTML dark premium del proyecto."""
+    from html import escape
+    c = p
+
+    def esc(val):
+        return escape(str(val)) if val else 'N/A'
+
+    etiquetas_html = ""
+    etiquetas = c.get("etiquetas", [])
+    if etiquetas:
+        chips = " ".join(f'<span style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;color:#D4AF37;border:1px solid rgba(212,175,55,0.3);background:rgba(212,175,55,0.06);">{e}</span>' for e in etiquetas)
+        etiquetas_html = f'<div style="margin-top:12px;">{chips}</div>'
+
+    cotizaciones = c.get("cotizaciones", {})
+    cotizaciones_html = ""
+    if cotizaciones:
+        rows = ""
+        for tipo, data in cotizaciones.items():
+            precio = data.get("precio", 0)
+            detalles = data.get("detalles", "")
+            precio_str = f"{precio:,.2f} UF" if precio else "—"
+            detalles_str = f'<br><span style="font-size:13px;color:#9ca3af;">{esc(detalles)}</span>' if detalles else ""
+            rows += f'<tr><td style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05);font-weight:500;">{esc(tipo)}</td><td style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05);color:#D4AF37;font-weight:600;">{precio_str}{detalles_str}</td></tr>'
+        cotizaciones_html = f"""
+        <div class="section">
+          <div class="section-title">COTIZACIONES</div>
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <tr style="background:rgba(255,255,255,0.03);"><th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;">Tipo</th><th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;">Precio</th></tr>
+            {rows}
+          </table>
+        </div>"""
+
+    analisis = c.get("analisis_cotizaciones", "")
+    analisis_html = ""
+    if analisis:
+        analisis_html = f"""
+        <div class="section">
+          <div class="section-title">ANÁLISIS</div>
+          <div style="font-size:14px;line-height:1.8;color:#d1d5db;padding:20px;background:rgba(255,255,255,0.02);border-radius:12px;border-left:3px solid #D4AF37;">{esc(analisis)}</div>
+        </div>"""
+
+    estado = "En Construcción"
+    estado_color = "#D4AF37"
+
+    html = f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha Privada - {esc(c['nombre'])}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ background: #121212; font-family: 'Inter', sans-serif; color: #ffffff; padding: 0; min-height: 100vh; }}
+  .page {{ max-width: 1200px; margin: 0 auto; padding: 48px 56px; }}
+  .header {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; }}
+  .brand {{ font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; color: #D4AF37; letter-spacing: 0.5px; }}
+  .brand-sub {{ font-size: 11px; color: #6b7280; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }}
+  .header-right {{ text-align: right; }}
+  .header-right .line {{ font-size: 11px; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400; }}
+  .header-right .line + .line {{ margin-top: 2px; }}
+  .layout {{ display: grid; grid-template-columns: 320px 1fr; gap: 48px; }}
+  .left-col {{ display: flex; flex-direction: column; gap: 24px; }}
+  .image-placeholder {{ width: 100%; aspect-ratio: 4/3; background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(212,175,55,0.15); }}
+  .image-placeholder span {{ font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: #D4AF37; opacity: 0.6; letter-spacing: 1px; }}
+  .status {{ display: flex; align-items: flex-start; gap: 12px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 12px; }}
+  .status-bar {{ width: 3px; min-height: 40px; background: {estado_color}; border-radius: 2px; flex-shrink: 0; }}
+  .status-content {{ }}
+  .status-label {{ font-size: 10px; color: #6b7280; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }}
+  .status-value {{ font-size: 14px; color: {estado_color}; font-weight: 500; margin-top: 4px; }}
+  .divider {{ width: 60px; height: 2px; background: linear-gradient(90deg, #D4AF37, rgba(212,175,55,0.2)); margin-bottom: 24px; }}
+  .project-title {{ font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700; color: #ffffff; line-height: 1.2; margin-bottom: 8px; }}
+  .project-sub {{ font-size: 14px; color: #6b7280; font-weight: 300; margin-bottom: 28px; }}
+  .desc {{ font-size: 15px; line-height: 1.9; color: #d1d5db; text-align: justify; }}
+  .meta-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; margin-top: 28px; padding: 24px; background: rgba(255,255,255,0.02); border-radius: 12px; }}
+  .meta-item {{ }}
+  .meta-label {{ font-size: 10px; color: #6b7280; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }}
+  .meta-value {{ font-size: 18px; font-weight: 600; color: #ffffff; margin-top: 4px; }}
+  .meta-value.gold {{ color: #D4AF37; }}
+  .section {{ margin-top: 40px; }}
+  .section-title {{ font-family: 'Playfair Display', serif; font-size: 16px; color: #D4AF37; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }}
+  .footer {{ margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 11px; color: #4b5563; letter-spacing: 0.5px; }}
+  @media print {{ body {{ background: #121212; }} }}
+  @media (max-width: 768px) {{ .layout {{ grid-template-columns: 1fr; }} .page {{ padding: 24px; }} .project-title {{ font-size: 28px; }} }}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="brand">RyR Consultor Inmobiliario</div>
+      <div class="brand-sub">Ficha Técnica Privada</div>
+    </div>
+    <div class="header-right">
+      <div class="line">División Residencial Premium</div>
+      <div class="line">15 Años de Experiencia</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="left-col">
+      <div class="image-placeholder">
+        <span>FICHA PRIVADA</span>
+      </div>
+      <div class="status">
+        <div class="status-bar"></div>
+        <div class="status-content">
+          <div class="status-label">Estado del Proyecto</div>
+          <div class="status-value">{estado}</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="divider"></div>
+      <div class="project-title">{esc(c['nombre'])}</div>
+      <div class="project-sub">{'Búsqueda web' if c['fuente'] == 'web' else 'PDF subido'} &middot; {c.get('created_at', '')[:10]}</div>
+
+      <div class="desc">{esc(c['descripcion'])}</div>
+      {etiquetas_html}
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Precio</div>
+          <div class="meta-value gold">{c.get('precio_uf', 0):,.2f} UF</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Fuente</div>
+          <div class="meta-value">{'Web' if c['fuente'] == 'web' else 'PDF'}</div>
+        </div>
+      </div>
+
+      {cotizaciones_html}
+      {analisis_html}
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>RyR Consultor Inmobiliario &mdash; Documento Confidencial</span>
+    <span>Generado el {c.get('created_at', '')[:10]}</span>
+  </div>
+</div>
+</body>
+</html>"""
+    return html
+
 proyectos = get_proyectos()
 
 if not proyectos:
@@ -194,7 +342,7 @@ else:
                 else:
                     st.markdown("### 💰\n—", unsafe_allow_html=True)
             with cols[3]:
-                col_b1, col_b2, col_b3 = st.columns(3)
+                col_b1, col_b2, col_b3, col_b4 = st.columns(4)
                 with col_b1:
                     if st.button("✏️", key=f"edit_{p['id']}", help="Editar proyecto"):
                         st.session_state[f"editando_proyecto_{p['id']}"] = True
@@ -204,6 +352,16 @@ else:
                         st.session_state[f"editando_tags_{p['id']}"] = True
                         st.rerun()
                 with col_b3:
+                    html_ficha = _generar_ficha_proyecto_html(p)
+                    st.download_button(
+                        label="📄",
+                        data=html_ficha,
+                        file_name=f"ficha_{p['nombre'].replace(' ', '_')}.html",
+                        mime="text/html",
+                        key=f"dl_{p['id']}",
+                        help="Descargar ficha técnica del proyecto",
+                    )
+                with col_b4:
                     if st.button("🗑️", key=f"del_{p['id']}", help="Eliminar proyecto"):
                         delete_proyecto(p["id"])
                         st.rerun()
