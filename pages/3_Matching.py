@@ -319,51 +319,123 @@ if st.session_state.chat_messages:
     st.markdown("---")
     st.markdown("### 📄 Exportar informe")
 
-    export_lines = []
-    export_lines.append("# Informe de Matching - Consultor Inmobiliario")
-    export_lines.append("")
-    export_lines.append(f"**Cliente:** {cliente['nombre']}")
-    export_lines.append(f"**Fecha:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    export_lines.append("")
-    export_lines.append("---")
-    export_lines.append("## Perfil financiero del cliente")
-    export_lines.append("")
+    from html import escape
 
-    ingresos = cliente.get("ingresos", {})
-    capacidad = cliente.get("capacidad_inversion", {})
+    c = cliente
+    ingresos = c.get("ingresos", {})
+    capacidad = c.get("capacidad_inversion", {})
     total_ingresos = sum(ingresos.values())
-    deudas_cliente = cliente.get("deudas", [])
+    deudas_cliente = c.get("deudas", [])
     total_descuento = sum(d.get("cuota", 0) for d in deudas_cliente if d.get("descontar"))
+    limite_uf = calcular_limite_uf(max(0, total_ingresos - total_descuento))
 
-    export_lines.append(f"- **Nombre:** {cliente.get('nombre', 'N/A')}")
-    export_lines.append(f"- **RUT:** {cliente.get('rut', 'N/A')}")
-    export_lines.append(f"- **Profesión:** {cliente.get('profesion', 'N/A')}")
-    export_lines.append(f"- **Objetivo:** {cliente.get('objetivo', 'N/A')}")
-    if cliente.get('sub_objetivo'):
-        export_lines.append(f"- **Estrategia:** {cliente['sub_objetivo']}")
-    export_lines.append(f"- **Ingresos totales:** ${total_ingresos:,}/mes")
-    if total_descuento > 0:
-        export_lines.append(f"- **Descuento deudas:** -${total_descuento:,}/mes")
-    export_lines.append(f"- **Ahorro para pie:** ${capacidad.get('ahorro_pie', 0):,}")
-    export_lines.append(f"- **CAM:** ${capacidad.get('cam', 0):,}")
-    export_lines.append(f"- **Límite de compra:** {calcular_limite_uf(max(0, total_ingresos - total_descuento)):,.2f} UF")
-    export_lines.append("")
-    export_lines.append("---")
-    export_lines.append("## Conversación")
-    export_lines.append("")
+    def esc(val):
+        return escape(str(val)) if val else 'N/A'
 
+    def fmt(val):
+        return f"${val:,.0f}" if val else "$0"
+
+    nombre_cliente = esc(c.get('nombre', 'N/A'))
+    fecha = datetime.now().strftime('%Y-%m-%d %H:%M')
+
+    chat_html = ""
     for msg in st.session_state.chat_messages:
-        role_label = "**Asesor AI**" if msg["role"] == "assistant" else "**Cliente**"
-        export_lines.append(f"### {role_label}")
-        export_lines.append(msg["content"])
-        export_lines.append("")
+        role_label = "Asesor AI" if msg["role"] == "assistant" else "Cliente"
+        role_color = "#0f3460" if msg["role"] == "assistant" else "#6b7280"
+        bg_color = "#f0f7ff" if msg["role"] == "assistant" else "#f9fafb"
+        chat_html += f"""<div class="msg" style="background:{bg_color};">
+            <div class="msg-role" style="color:{role_color};">{role_label}</div>
+            <div class="msg-content">{esc(msg['content'])}</div>
+        </div>"""
 
-    export_text = "\n".join(export_lines)
+    estrategia_html = ""
+    if c.get('sub_objetivo'):
+        estrategia_html = f"""<div class="grid-item">
+            <div class="label">Estrategia</div>
+            <div class="value">{esc(c['sub_objetivo'])}</div>
+        </div>"""
+
+    descuento_html = ""
+    if total_descuento > 0:
+        descuento_html = f"""<div class="grid-item">
+            <div class="label">Descuento deudas</div>
+            <div class="value">-${total_descuento:,}/mes</div>
+        </div>"""
+
+    export_text = f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe de Matching - {c['nombre']}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ font-family: 'Inter', sans-serif; background: #f0f2f5; padding: 40px 20px; color: #1a1a2e; }}
+  .container {{ max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); overflow: hidden; }}
+  .header {{ background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 32px 40px; }}
+  .header h1 {{ font-size: 28px; font-weight: 700; margin-bottom: 4px; }}
+  .header .sub {{ font-size: 14px; opacity: 0.8; }}
+  .header .fecha {{ font-size: 12px; opacity: 0.6; margin-top: 8px; }}
+  .body {{ padding: 32px 40px; }}
+  .section {{ margin-bottom: 28px; }}
+  .section-title {{ font-size: 18px; font-weight: 600; color: #0f3460; border-bottom: 2px solid #e8ecf1; padding-bottom: 8px; margin-bottom: 16px; }}
+  .grid-2 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }}
+  .grid-item .label {{ font-size: 13px; color: #6b7280; font-weight: 500; }}
+  .grid-item .value {{ font-size: 15px; font-weight: 600; color: #1a1a2e; }}
+  .highlight {{ background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; }}
+  .highlight .num {{ font-size: 22px; font-weight: 700; color: #0f3460; }}
+  .highlight .lbl {{ font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }}
+  .msg {{ padding: 16px; border-radius: 12px; margin-bottom: 12px; }}
+  .msg-role {{ font-size: 13px; font-weight: 600; margin-bottom: 6px; }}
+  .msg-content {{ font-size: 14px; line-height: 1.6; color: #1a1a2e; white-space: pre-wrap; }}
+  .footer {{ text-align: center; padding: 24px 40px; font-size: 12px; color: #9ca3af; border-top: 1px solid #f3f4f6; }}
+  @media print {{ body {{ background: white; padding: 0; }} .container {{ box-shadow: none; }} }}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Informe de Matching</h1>
+    <div class="sub">Consultor Inmobiliario</div>
+    <div class="fecha">{fecha}</div>
+  </div>
+  <div class="body">
+    <div class="section">
+      <div class="section-title">Perfil financiero del cliente</div>
+      <div class="grid-2">
+        <div class="grid-item"><div class="label">Nombre</div><div class="value">{nombre_cliente}</div></div>
+        <div class="grid-item"><div class="label">RUT</div><div class="value">{esc(c.get('rut'))}</div></div>
+        <div class="grid-item"><div class="label">Profesión</div><div class="value">{esc(c.get('profesion'))}</div></div>
+        <div class="grid-item"><div class="label">Objetivo</div><div class="value">{esc(c.get('objetivo'))}</div></div>
+        {estrategia_html}
+      </div>
+    </div>
+    <div class="highlight">
+      <div><div class="num">{fmt(total_ingresos)}</div><div class="lbl">Ingresos / mes</div></div>
+      <div><div class="num">{fmt(capacidad.get('ahorro_pie', 0))}</div><div class="lbl">Ahorro para pie</div></div>
+      <div><div class="num">{fmt(capacidad.get('cam', 0))}</div><div class="lbl">CAM</div></div>
+    </div>
+    {descuento_html}
+    <div class="section">
+      <div class="section-title">Límite de compra</div>
+      <div style="font-size: 24px; font-weight: 700; color: #0f3460;">{limite_uf:,.2f} UF</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Conversación</div>
+      {chat_html}
+    </div>
+  </div>
+  <div class="footer">
+    Informe generado por Consultor Inmobiliario &mdash; {fecha}
+  </div>
+</div>
+</body>
+</html>"""
 
     st.download_button(
-        "📥 Descargar informe (.md)",
+        "📥 Descargar informe (.html)",
         data=export_text,
-        file_name=f"matching_{cliente['nombre'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}.md",
-        mime="text/markdown",
+        file_name=f"matching_{cliente['nombre'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+        mime="text/html",
         use_container_width=True,
     )
