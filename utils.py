@@ -278,6 +278,98 @@ def generar_descripcion_con_ai(nombre, contexto_web="", tier="nano"):
         _acumular_usage(response)
         return response.choices[0].message.content
     except Exception as e:
+        return f"Error al generar descripción: {str(e)}"
+
+
+def analizar_pdf_con_ai(nombre, texto_pdf, tier="nano"):
+    """
+    Usa el proveedor activo para analizar el PDF de un proyecto.
+    """
+    client = get_ai_client()
+    if not client:
+        return None
+    model = get_model_for_provider(tier)
+
+    if len(texto_pdf) > 15000:
+        texto_pdf = texto_pdf[:15000] + "\n\n[... texto truncado por longitud ...]"
+
+    system_prompt = (
+        "Eres analista inmobiliario. En español, máximo 3 párrafos: "
+        "describe el proyecto, características, precios UF y público objetivo."
+    )
+
+    user_prompt = (
+        f"Analiza esta presentación del proyecto \"{nombre}\" y genera una ficha breve.\n\n"
+        f"--- DOCUMENTO ---\n{texto_pdf}\n--- FIN ---\n\nMáximo 3 párrafos."
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.7,
+            max_tokens=2000,
+        )
+        _acumular_usage(response)
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error al analizar PDF: {str(e)}"
+
+
+def analizar_cotizacion_con_ai(nombre_proyecto, cotizaciones, tier="nano"):
+    """
+    Usa el proveedor activo para analizar las cotizaciones de un proyecto,
+    incluyendo el contenido extraído de PDFs si están disponibles.
+    """
+    client = get_ai_client()
+    if not client:
+        return None
+
+    texto_cotizaciones = ""
+    for tipo, datos in cotizaciones.items():
+        if datos['precio'] > 0 or datos.get('has_pdf'):
+            texto_cotizaciones += f"--- TIPOLOGÍA: {tipo} ---\n"
+            if datos['precio'] > 0:
+                texto_cotizaciones += f"Precio base: {datos['precio']} UF\n"
+            if datos['detalles']:
+                texto_cotizaciones += f"Notas: {datos['detalles']}\n"
+            if datos.get('has_pdf') and datos.get('pdf_content'):
+                pdf_text = datos['pdf_content']
+                if len(pdf_text) > 3000:
+                    pdf_text = pdf_text[:3000] + "... [truncado]"
+                texto_cotizaciones += f"Contenido de la cotización PDF:\n{pdf_text}\n"
+            texto_cotizaciones += "\n"
+
+    if not texto_cotizaciones:
+        return "No hay cotizaciones suficientes para analizar."
+
+    system_prompt = (
+        "Eres analista de inversiones inmobiliarias. En español, máximo 3 párrafos, "
+        "compara las tipologías y recomienda la mejor opción."
+    )
+
+    user_prompt = (
+        f"Analiza estas cotizaciones del proyecto \"{nombre_proyecto}\":\n\n"
+        f"{texto_cotizaciones}\n\n"
+        "Compara las tipologías y recomienda la mejor inversión. Máximo 3 párrafos."
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model=get_model_for_provider(tier),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.7,
+            max_tokens=1500,
+        )
+        _acumular_usage(response)
+        return response.choices[0].message.content
+    except Exception as e:
         return f"Error al analizar cotizaciones: {str(e)}"
 
 
