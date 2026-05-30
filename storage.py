@@ -1,204 +1,318 @@
 """
-Persistencia JSON para proyectos y clientes.
-Almacena los datos en data/proyectos.json y data/clientes.json
+Persistencia SQLite para proyectos, clientes y promociones.
+API 100% compatible con la versión anterior (JSON).
 """
 
-import json
+import sqlite3
 import os
 import uuid
+import json
 from datetime import datetime
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-PROYECTOS_FILE = os.path.join(DATA_DIR, "proyectos.json")
-CLIENTES_FILE = os.path.join(DATA_DIR, "clientes.json")
-PROMOCIONES_FILE = os.path.join(DATA_DIR, "promociones.json")
+DB_PATH = os.path.join(DATA_DIR, "ryr.db")
 
 
-def _asegurar_directorio():
-    """Crea el directorio data si no existe."""
+def _get_conn():
     os.makedirs(DATA_DIR, exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    return conn
 
 
-def _cargar_json(filepath):
-    """Carga un archivo JSON, retorna lista vacía si no existe."""
-    _asegurar_directorio()
-    if not os.path.exists(filepath):
-        return []
+def _init_db():
+    conn = _get_conn()
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS proyectos (
+            id TEXT PRIMARY KEY,
+            nombre TEXT NOT NULL DEFAULT '',
+            descripcion TEXT DEFAULT '',
+            fuente TEXT DEFAULT '',
+            detalles_web TEXT DEFAULT '',
+            pdf_content TEXT DEFAULT '',
+            precio_uf REAL DEFAULT 0,
+            etiquetas TEXT DEFAULT '[]',
+            cotizaciones TEXT DEFAULT '{}',
+            analisis_cotizaciones TEXT DEFAULT '',
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS clientes (
+            id TEXT PRIMARY KEY,
+            nombre TEXT NOT NULL DEFAULT '',
+            telefono TEXT DEFAULT '',
+            correo TEXT DEFAULT '',
+            rut TEXT DEFAULT '',
+            estado_civil TEXT DEFAULT '',
+            profesion TEXT DEFAULT '',
+            objetivo TEXT DEFAULT '',
+            sub_objetivo TEXT DEFAULT '',
+            direccion TEXT DEFAULT '',
+            ingresos TEXT DEFAULT '{}',
+            capacidad_inversion TEXT DEFAULT '{}',
+            deudas TEXT DEFAULT '[]',
+            activos TEXT DEFAULT '[]',
+            cuentas TEXT DEFAULT '[]',
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS promociones (
+            id TEXT PRIMARY KEY,
+            proyecto_id TEXT DEFAULT '',
+            nombre_proyecto TEXT DEFAULT '',
+            mes TEXT DEFAULT '',
+            descripcion_promocion TEXT DEFAULT '',
+            archivo_original TEXT DEFAULT '',
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+    """)
+    conn.commit()
+    conn.close()
+
+
+def _backup_db():
+    import shutil
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
-        return []
+        backup_path = DB_PATH + f".bak.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        if os.path.exists(DB_PATH):
+            shutil.copy2(DB_PATH, backup_path)
+    except Exception:
+        import logging
+        logging.getLogger("storage").warning("No se pudo crear backup de la DB", exc_info=True)
 
 
-def _guardar_json(filepath, data):
-    """Guarda datos en un archivo JSON con copia de seguridad."""
-    _asegurar_directorio()
-    # Crear backup del archivo actual antes de sobrescribir
-    if os.path.exists(filepath):
-        backup_path = filepath + f".bak.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        try:
-            import shutil
-            shutil.copy2(filepath, backup_path)
-        except Exception:
-            pass
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+def _row_to_dict(row):
+    d = dict(row)
+    for key in ("etiquetas", "cotizaciones", "ingresos", "capacidad_inversion",
+                "deudas", "activos", "cuentas", "analisis_cotizaciones"):
+        if key in d and isinstance(d[key], str):
+            try:
+                d[key] = json.loads(d[key])
+            except (json.JSONDecodeError, TypeError):
+                pass
+    return d
 
+
+_init_db()
 
 # ========== PROYECTOS ==========
 
 def get_proyectos():
-    """Retorna la lista de proyectos."""
-    return _cargar_json(PROYECTOS_FILE)
+    conn = _get_conn()
+    rows = conn.execute("SELECT * FROM proyectos ORDER BY created_at DESC").fetchall()
+    conn.close()
+    return [_row_to_dict(r) for r in rows]
 
 
 def add_proyecto(nombre, descripcion, fuente, detalles_web="", pdf_content="", precio_uf=0, etiquetas=None):
-    """Agrega un nuevo proyecto."""
-    proyectos = get_proyectos()
-    proyecto = {
-        "id": str(uuid.uuid4()),
+    proyecto_id = str(uuid.uuid4())
+    created_at = datetime.now().isoformat()
+    conn = _get_conn()
+    conn.execute(
+        """INSERT INTO proyectos (id, nombre, descripcion, fuente, detalles_web, pdf_content,
+           precio_uf, etiquetas, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (proyecto_id, nombre, descripcion, fuente, detalles_web, pdf_content,
+         precio_uf, json.dumps(etiquetas or [], ensure_ascii=False), created_at),
+    )
+    conn.commit()
+    conn.close()
+    return {
+        "id": proyecto_id,
         "nombre": nombre,
         "descripcion": descripcion,
-        "fuente": fuente,  # "web" o "pdf"
+        "fuente": fuente,
         "detalles_web": detalles_web,
         "pdf_content": pdf_content,
         "precio_uf": precio_uf,
         "etiquetas": etiquetas or [],
-        "created_at": datetime.now().isoformat(),
+        "cotizaciones": {},
+        "analisis_cotizaciones": "",
+        "created_at": created_at,
     }
-    proyectos.append(proyecto)
-    _guardar_json(PROYECTOS_FILE, proyectos)
-    return proyecto
 
 
 def update_proyecto(proyecto_id, **kwargs):
-    """Actualiza un proyecto existente."""
-    proyectos = get_proyectos()
-    for p in proyectos:
-        if p["id"] == proyecto_id:
-            p.update(kwargs)
-            break
-    _guardar_json(PROYECTOS_FILE, proyectos)
+    conn = _get_conn()
+    updates = []
+    values = []
+    json_fields = {"etiquetas", "cotizaciones", "analisis_cotizaciones"}
+    for k, v in kwargs.items():
+        if k in json_fields and not isinstance(v, str):
+            v = json.dumps(v, ensure_ascii=False)
+        updates.append(f"{k} = ?")
+        values.append(v)
+    values.append(proyecto_id)
+    conn.execute(f"UPDATE proyectos SET {', '.join(updates)} WHERE id = ?", values)
+    conn.commit()
+    conn.close()
 
 
 def delete_proyecto(proyecto_id):
-    """Elimina un proyecto por su ID."""
-    proyectos = get_proyectos()
-    proyectos = [p for p in proyectos if p["id"] != proyecto_id]
-    _guardar_json(PROYECTOS_FILE, proyectos)
+    conn = _get_conn()
+    conn.execute("DELETE FROM proyectos WHERE id = ?", (proyecto_id,))
+    conn.commit()
+    conn.close()
+
+
+def get_proyecto_by_id(proyecto_id):
+    conn = _get_conn()
+    row = conn.execute("SELECT * FROM proyectos WHERE id = ?", (proyecto_id,)).fetchone()
+    conn.close()
+    return _row_to_dict(row) if row else None
 
 
 # ========== CLIENTES ==========
 
 def get_clientes():
-    """Retorna la lista de clientes."""
-    return _cargar_json(CLIENTES_FILE)
+    conn = _get_conn()
+    rows = conn.execute("SELECT * FROM clientes ORDER BY created_at DESC").fetchall()
+    conn.close()
+    return [_row_to_dict(r) for r in rows]
 
 
 def add_cliente(data):
-    """Agrega un nuevo cliente con su ficha financiera. El nuevo cliente queda al inicio de la lista."""
-    clientes = get_clientes()
-    cliente = {
-        "id": str(uuid.uuid4()),
-        "created_at": datetime.now().isoformat(),
-    }
-    cliente.update(data)
-    clientes.insert(0, cliente)
-    _guardar_json(CLIENTES_FILE, clientes)
-    return cliente
+    cliente_id = str(uuid.uuid4())
+    created_at = datetime.now().isoformat()
+    conn = _get_conn()
+    conn.execute(
+        """INSERT INTO clientes (id, nombre, telefono, correo, rut, estado_civil, profesion,
+           objetivo, sub_objetivo, direccion, ingresos, capacidad_inversion, deudas, activos, cuentas, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            cliente_id,
+            data.get("nombre", ""),
+            data.get("telefono", ""),
+            data.get("correo", ""),
+            data.get("rut", ""),
+            data.get("estado_civil", ""),
+            data.get("profesion", ""),
+            data.get("objetivo", ""),
+            data.get("sub_objetivo", ""),
+            data.get("direccion", ""),
+            json.dumps(data.get("ingresos", {}), ensure_ascii=False),
+            json.dumps(data.get("capacidad_inversion", {}), ensure_ascii=False),
+            json.dumps(data.get("deudas", []), ensure_ascii=False),
+            json.dumps(data.get("activos", []), ensure_ascii=False),
+            json.dumps(data.get("cuentas", []), ensure_ascii=False),
+            created_at,
+        ),
+    )
+    conn.commit()
+    _backup_db()
+    conn.close()
+    result = dict(data)
+    result.update({"id": cliente_id, "created_at": created_at})
+    return result
 
 
 def update_cliente(cliente_id, **kwargs):
-    """Actualiza un cliente existente."""
-    clientes = get_clientes()
-    for c in clientes:
-        if c["id"] == cliente_id:
-            c.update(kwargs)
-            break
-    _guardar_json(CLIENTES_FILE, clientes)
+    conn = _get_conn()
+    updates = []
+    values = []
+    json_fields = {"ingresos", "capacidad_inversion", "deudas", "activos", "cuentas"}
+    for k, v in kwargs.items():
+        if k in json_fields and not isinstance(v, str):
+            v = json.dumps(v, ensure_ascii=False)
+        updates.append(f"{k} = ?")
+        values.append(v)
+    values.append(cliente_id)
+    conn.execute(f"UPDATE clientes SET {', '.join(updates)} WHERE id = ?", values)
+    conn.commit()
+    _backup_db()
+    conn.close()
 
 
 def delete_cliente(cliente_id):
-    """Elimina un cliente por su ID."""
-    clientes = get_clientes()
-    clientes = [c for c in clientes if c["id"] != cliente_id]
-    _guardar_json(CLIENTES_FILE, clientes)
+    conn = _get_conn()
+    conn.execute("DELETE FROM clientes WHERE id = ?", (cliente_id,))
+    conn.commit()
+    _backup_db()
+    conn.close()
 
 
 def get_cliente_by_id(cliente_id):
-    """Retorna un cliente por su ID."""
-    clientes = get_clientes()
-    for c in clientes:
-        if c["id"] == cliente_id:
-            return c
-    return None
-
-
-def get_proyecto_by_id(proyecto_id):
-    """Retorna un proyecto por su ID."""
-    proyectos = get_proyectos()
-    for p in proyectos:
-        if p["id"] == proyecto_id:
-            return p
-    return None
+    conn = _get_conn()
+    row = conn.execute("SELECT * FROM clientes WHERE id = ?", (cliente_id,)).fetchone()
+    conn.close()
+    return _row_to_dict(row) if row else None
 
 
 # ========== PROMOCIONES ==========
 
 def get_promociones():
-    """Retorna la lista de promociones."""
-    return _cargar_json(PROMOCIONES_FILE)
+    conn = _get_conn()
+    rows = conn.execute("SELECT * FROM promociones ORDER BY created_at DESC").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 def add_promocion(proyecto_id, nombre_proyecto, mes, descripcion_promocion, archivo_original=""):
-    """Agrega una promoción a un proyecto."""
-    promociones = get_promociones()
-    promocion = {
-        "id": str(uuid.uuid4()),
+    promo_id = str(uuid.uuid4())
+    created_at = datetime.now().isoformat()
+    conn = _get_conn()
+    conn.execute(
+        """INSERT INTO promociones (id, proyecto_id, nombre_proyecto, mes, descripcion_promocion, archivo_original, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (promo_id, proyecto_id, nombre_proyecto, mes, descripcion_promocion, archivo_original, created_at),
+    )
+    conn.commit()
+    conn.close()
+    return {
+        "id": promo_id,
         "proyecto_id": proyecto_id,
         "nombre_proyecto": nombre_proyecto,
         "mes": mes,
         "descripcion_promocion": descripcion_promocion,
         "archivo_original": archivo_original,
-        "created_at": datetime.now().isoformat(),
+        "created_at": created_at,
     }
-    promociones.append(promocion)
-    _guardar_json(PROMOCIONES_FILE, promociones)
-    return promocion
 
 
 def get_promociones_by_proyecto(proyecto_id):
-    """Retorna las promociones de un proyecto."""
-    promociones = get_promociones()
-    return [p for p in promociones if p["proyecto_id"] == proyecto_id]
+    conn = _get_conn()
+    rows = conn.execute(
+        "SELECT * FROM promociones WHERE proyecto_id = ? ORDER BY created_at DESC",
+        (proyecto_id,),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 def get_promociones_by_mes(mes):
-    """Retorna las promociones de un mes específico."""
-    promociones = get_promociones()
-    return [p for p in promociones if p["mes"] == mes]
+    conn = _get_conn()
+    rows = conn.execute(
+        "SELECT * FROM promociones WHERE mes = ? ORDER BY created_at DESC",
+        (mes,),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 def update_promocion(promocion_id, **kwargs):
-    """Actualiza una promoción existente."""
-    promociones = get_promociones()
-    for p in promociones:
-        if p["id"] == promocion_id:
-            p.update(kwargs)
-            break
-    _guardar_json(PROMOCIONES_FILE, promociones)
+    conn = _get_conn()
+    updates = []
+    values = []
+    for k, v in kwargs.items():
+        updates.append(f"{k} = ?")
+        values.append(v)
+    values.append(promocion_id)
+    conn.execute(f"UPDATE promociones SET {', '.join(updates)} WHERE id = ?", values)
+    conn.commit()
+    conn.close()
 
 
 def delete_promocion(promocion_id):
-    """Elimina una promoción por su ID."""
-    promociones = get_promociones()
-    promociones = [p for p in promociones if p["id"] != promocion_id]
-    _guardar_json(PROMOCIONES_FILE, promociones)
+    conn = _get_conn()
+    conn.execute("DELETE FROM promociones WHERE id = ?", (promocion_id,))
+    conn.commit()
+    conn.close()
 
 
 def get_meses_promociones():
-    """Retorna la lista de meses que tienen promociones registradas."""
-    promociones = get_promociones()
-    meses = sorted(set(p["mes"] for p in promociones))
-    return meses
+    conn = _get_conn()
+    rows = conn.execute("SELECT DISTINCT mes FROM promociones ORDER BY mes DESC").fetchall()
+    conn.close()
+    return sorted(set(r["mes"] for r in rows if r["mes"]))
