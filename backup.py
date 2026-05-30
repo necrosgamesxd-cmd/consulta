@@ -20,13 +20,24 @@ except ImportError:
 BASE_DIR = os.path.dirname(__file__)
 DATA_DIR = os.path.join(BASE_DIR, "data")
 GIT_LOCK = os.path.join(BASE_DIR, ".git", "index.lock")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 INTERVALO_SEGUNDOS = 300  # 5 minutos
 
 _hilo_periodico_activo = False
 
 SNAPSHOT_DIR = os.path.join(BASE_DIR, "data", "snapshots")
+
+
+def _obtener_token():
+    """Obtiene GITHUB_TOKEN desde .env, variable de entorno o secrets de Streamlit."""
+    token = os.getenv("GITHUB_TOKEN")
+    if token:
+        return token
+    try:
+        import streamlit as st
+        return st.secrets.get("GITHUB_TOKEN", "")
+    except Exception:
+        return ""
 
 
 def _run(*args, **kwargs):
@@ -61,17 +72,16 @@ def _esperar_lock():
 
 def _configurar_remote():
     """Configura el remote con token si está disponible."""
-    if not GITHUB_TOKEN:
+    token = _obtener_token()
+    if not token:
         return True
     ok, out, err = _git("remote", "get-url", "origin")
     if not ok:
         return False
     url = out.strip()
-    # Si ya tiene el token incrustado, no modificar
-    if GITHUB_TOKEN in url:
+    if token in url:
         return True
-    # Reemplazar https://github.com/ -> https://TOKEN@github.com/
-    new_url = url.replace("https://", f"https://{GITHUB_TOKEN}@")
+    new_url = url.replace("https://", f"https://{token}@")
     _git("remote", "set-url", "origin", new_url)
     return True
 
@@ -105,7 +115,11 @@ def commit_y_push(mensaje=None):
     if ok:
         return True, f"✅ Backup subido a GitHub ({timestamp})"
     else:
-        return True, f"✅ Commit local OK (push pendiente: configura GITHUB_TOKEN en .env)"
+        token = _obtener_token()
+        if not token:
+            return True, f"✅ Commit local OK (push pendiente: agrega GITHUB_TOKEN en .env o secrets de Streamlit)"
+        else:
+            return True, f"✅ Commit local OK (push falló: {err[:200]})"
 
 
 def crear_snapshot():
