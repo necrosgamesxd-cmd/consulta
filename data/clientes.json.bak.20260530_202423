@@ -1,0 +1,87 @@
+[
+  {
+    "id": "5ded3cfa-e190-4753-97ec-0219871c4353",
+    "created_at": "2026-05-27T20:49:10.937301",
+    "nombre": "Jimena Andrea Bravo Valenzuela",
+    "telefono": "966182207",
+    "correo": "jimebravo2@gmail.com",
+    "rut": "13278916-9",
+    "estado_civil": "Casado/a",
+    "profesion": "secretaria",
+    "direccion": "sala de marincunga 1442, la florida",
+    "ingresos": {
+      "renta": 1500000,
+      "dividendos": 0,
+      "pensiones": 0,
+      "arriendos": 0
+    },
+    "capacidad_inversion": {
+      "ahorro_pie": 15000000,
+      "cam": 400000
+    },
+    "deudas": [],
+    "activos": [],
+    "cuentas": []
+  },
+  {
+    "id": "d56330e5-4379-4e22-86b6-522df62794a7",
+    "created_at": "2026-05-30T20:24:16.884312",
+    "nombre": "Alex osori",
+    "telefono": "65456651651",
+    "correo": "hola@hola.com",
+    "rut": "196354154",
+    "estado_civil": "Casado/a",
+    "profesion": "gerente de ventas",
+    "objetivo": "Invertir",
+    "sub_objetivo": "Jubilación",
+    "direccion": "maipu",
+    "ingresos": {
+      "renta": 2000000,
+      "dividendos": 10000,
+      "pensiones": 0,
+      "arriendos": 0
+    },
+    "capacidad_inversion": {
+      "ahorro_pie": 10000000,
+      "cam": 400000
+    },
+    "deudas": [
+      {
+        "tipo": "automotris",
+        "institucion": "santander",
+        "cuota": 212000,
+        "total": 8000000,
+        "nro_cuota": 3,
+        "descontar": true
+      },
+      {
+        "tipo": "comercial",
+        "institucion": "falabella",
+        "cuota": 300000,
+        "total": 0,
+        "nro_cuota": 0,
+        "descontar": false
+      }
+    ],
+    "activos": [
+      {
+        "nombre": "auto",
+        "valor": 8000000
+      },
+      {
+        "nombre": "auto",
+        "valor": 5000000
+      }
+    ],
+    "cuentas": [
+      {
+        "tipo": "corriente",
+        "banco": "santander"
+      },
+      {
+        "tipo": "corriente",
+        "banco": "falabella"
+      }
+    ]
+  }
+]
