@@ -413,7 +413,7 @@ DEUDAS VIGENTES:
     
     datos_cliente += f"\nCAPACIDAD DE INVERSIÓN:\n"
     datos_cliente += f"- Ahorro para pie: ${cliente.get('capacidad_inversion', {}).get('ahorro_pie', 0):,}\n"
-    datos_cliente += f"- CAM (Crédito Aprobado Máximo): ${cliente.get('capacidad_inversion', {}).get('cam', 0):,}\n"
+    datos_cliente += f"- CAM (Capacidad de Ahorro Mensual): ${cliente.get('capacidad_inversion', {}).get('cam', 0):,}\n"
     datos_cliente += f"\nLÍMITE DE COMPRA (Basado en ingresos disponibles):\n"
     datos_cliente += f"- Ingresos brutos: ${total_ingresos_brutos:,}\n"
     if total_descuento_deudas > 0:

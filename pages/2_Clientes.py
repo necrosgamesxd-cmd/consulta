@@ -207,7 +207,7 @@ with st.expander("➕ Registrar nuevo cliente", expanded=False):
     with col1:
         ahorro_pie = st.number_input("Ahorro para pie ($)", min_value=0, step=1000000, value=0, format="%d", key="new_pie")
     with col2:
-        cam = st.number_input("CAM - Crédito Aprobado Máximo ($)", min_value=0, step=1000000, value=0, format="%d", key="new_cam")
+        cam = st.number_input("CAM - Capacidad de Ahorro Mensual ($)", min_value=0, step=1000000, value=0, format="%d", key="new_cam")
 
     st.markdown("---")
     st.markdown("### 📊 Deudas Vigentes")
