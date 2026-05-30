@@ -26,7 +26,7 @@ PROVIDERS = {
         },
         "headers": {
             "HTTP-Referer": "https://consultor-inmobiliario.app",
-            "X-Title": "Consultor Inmobiliario",
+            "X-Title": "RyR Consultor Inmobiliario",
         },
     },
     "groq": {

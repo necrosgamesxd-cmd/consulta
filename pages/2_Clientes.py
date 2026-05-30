@@ -60,106 +60,129 @@ def _generar_ficha_html(cliente):
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ficha Financiera - {c['nombre']}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-  body {{ font-family: 'Inter', sans-serif; background: #f0f2f5; padding: 40px 20px; color: #1a1a2e; }}
-  .container {{ max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); overflow: hidden; }}
-  .header {{ background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 32px 40px; }}
-  .header h1 {{ font-size: 28px; font-weight: 700; margin-bottom: 4px; }}
-  .header .sub {{ font-size: 14px; opacity: 0.8; }}
-  .header .fecha {{ font-size: 12px; opacity: 0.6; margin-top: 8px; }}
-  .body {{ padding: 32px 40px; }}
-  .section {{ margin-bottom: 28px; }}
-  .section-title {{ font-size: 18px; font-weight: 600; color: #0f3460; border-bottom: 2px solid #e8ecf1; padding-bottom: 8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }}
-  .grid-2 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }}
-  .grid-2 .label {{ font-size: 13px; color: #6b7280; font-weight: 500; }}
-  .grid-2 .value {{ font-size: 15px; font-weight: 600; color: #1a1a2e; }}
-  .highlight {{ background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; }}
-  .highlight .num {{ font-size: 22px; font-weight: 700; color: #0f3460; }}
-  .highlight .lbl {{ font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }}
-  table {{ width: 100%; border-collapse: collapse; margin-top: 8px; }}
-  th {{ background: #f8fafc; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; border-bottom: 2px solid #e5e7eb; }}
-  td {{ padding: 10px 12px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }}
+  body {{ background: #121212; font-family: 'Inter', sans-serif; color: #ffffff; padding: 0; min-height: 100vh; }}
+  .page {{ max-width: 1100px; margin: 0 auto; padding: 48px 56px; }}
+  .header {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 48px; }}
+  .brand {{ font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; color: #D4AF37; letter-spacing: 0.5px; }}
+  .brand-sub {{ font-size: 11px; color: #6b7280; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }}
+  .header-right {{ text-align: right; }}
+  .header-right .line {{ font-size: 11px; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400; }}
+  .header-right .line + .line {{ margin-top: 2px; }}
+  .divider {{ width: 60px; height: 2px; background: linear-gradient(90deg, #D4AF37, rgba(212,175,55,0.2)); margin-bottom: 28px; }}
+  .client-name {{ font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: #ffffff; line-height: 1.2; margin-bottom: 4px; }}
+  .client-sub {{ font-size: 14px; color: #6b7280; font-weight: 300; margin-bottom: 32px; }}
+  .highlight {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 40px; }}
+  .highlight-item {{ background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.12); border-radius: 12px; padding: 20px 24px; text-align: center; }}
+  .highlight-item .num {{ font-size: 22px; font-weight: 700; color: #D4AF37; }}
+  .highlight-item .lbl {{ font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 6px; }}
+  .section {{ margin-bottom: 32px; }}
+  .section-title {{ font-family: 'Playfair Display', serif; font-size: 15px; color: #D4AF37; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }}
+  .section-title::after {{ content: ''; display: block; width: 40px; height: 1px; background: rgba(212,175,55,0.3); margin-top: 8px; }}
+  .grid-2 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px 32px; }}
+  .grid-2 .label {{ font-size: 11px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }}
+  .grid-2 .value {{ font-size: 15px; font-weight: 500; color: #ffffff; margin-top: 2px; }}
+  table {{ width: 100%; border-collapse: collapse; }}
+  th {{ font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }}
+  td {{ padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px; color: #d1d5db; }}
   tr:last-child td {{ border-bottom: none; }}
-  .footer {{ text-align: center; padding: 24px 40px; font-size: 12px; color: #9ca3af; border-top: 1px solid #f3f4f6; }}
-  .badge {{ display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; background: #dbeafe; color: #1e40af; }}
-  @media print {{ body {{ background: white; padding: 0; }} .container {{ box-shadow: none; }} }}
+  tr.total td {{ font-weight: 600; color: #ffffff; background: rgba(212,175,55,0.06); }}
+  .empty-state {{ font-size: 13px; color: #6b7280; font-style: italic; padding: 12px 0; }}
+  .footer {{ margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 11px; color: #4b5563; letter-spacing: 0.5px; }}
+  .badge {{ display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 500; letter-spacing: 0.5px; color: #D4AF37; border: 1px solid rgba(212,175,55,0.25); background: rgba(212,175,55,0.06); }}
+  @media print {{ body {{ background: #121212; }} }}
+  @media (max-width: 768px) {{ .page {{ padding: 24px; }} .highlight {{ grid-template-columns: 1fr; }} .grid-2 {{ grid-template-columns: 1fr; }} .client-name {{ font-size: 26px; }} }}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="page">
   <div class="header">
-    <h1>📋 {nombre_cliente}</h1>
-    <div class="sub">Ficha Financiera Completa</div>
-    <div class="fecha">Registrado el {fecha}</div>
-  </div>
-  <div class="body">
-    <!-- HIGHLIGHTS -->
-    <div class="highlight">
-      <div><div class="num">{fmt(total_ingresos_brutos)}</div><div class="lbl">Ingresos Totales</div></div>
-      <div><div class="num">{fmt(total_ingresos_netos)}</div><div class="lbl">Ingresos Netos</div></div>
-      <div><div class="num">{calcular_limite_uf(total_ingresos_netos):,.2f}</div><div class="lbl">Límite Máx. Crédito (UF)</div></div>
+    <div>
+      <div class="brand">RyR Consultor Inmobiliario</div>
+      <div class="brand-sub">Ficha Financiera Privada</div>
     </div>
-
-    <!-- DATOS PERSONALES -->
-    <div class="section">
-      <div class="section-title">👤 Datos Personales</div>
-      <div class="grid-2">
-        <div><div class="label">Nombre</div><div class="value">{nombre_cliente}</div></div>
-        <div><div class="label">RUT</div><div class="value">{esc(c.get('rut'))}</div></div>
-        <div><div class="label">Teléfono</div><div class="value">{esc(c.get('telefono'))}</div></div>
-        <div><div class="label">Correo</div><div class="value">{esc(c.get('correo'))}</div></div>
-        <div><div class="label">Estado Civil</div><div class="value">{esc(c.get('estado_civil'))}</div></div>
-        <div><div class="label">Profesión</div><div class="value">{esc(c.get('profesion'))}</div></div>
-        <div><div class="label">Dirección</div><div class="value">{esc(c.get('direccion'))}</div></div>
-        <div><div class="label">Objetivo</div><div class="value">{esc(c.get('objetivo'))}{f" ({esc(c.get('sub_objetivo', ''))})" if c.get('sub_objetivo') else ''}</div></div>
-      </div>
-    </div>
-
-    <!-- INGRESOS -->
-    <div class="section">
-      <div class="section-title">💰 Ingresos Mensuales</div>
-      <table>
-        <tr><th>Fuente</th><th>Monto</th></tr>
-        <tr><td>Renta</td><td>{fmt(ingresos.get('renta', 0))}</td></tr>
-        <tr><td>Dividendos</td><td>{fmt(ingresos.get('dividendos', 0))}</td></tr>
-        <tr><td>Pensiones</td><td>{fmt(ingresos.get('pensiones', 0))}</td></tr>
-        <tr><td>Arriendos</td><td>{fmt(ingresos.get('arriendos', 0))}</td></tr>
-        <tr style="font-weight: 700; background: #f8fafc;"><td>TOTAL</td><td>{fmt(total_ingresos_brutos)}</td></tr>
-      </table>
-    </div>
-
-    <!-- CAPACIDAD DE INVERSIÓN -->
-    <div class="section">
-      <div class="section-title">🏦 Capacidad de Inversión</div>
-      <div class="grid-2">
-        <div><div class="label">Límite Máx. Crédito</div><div class="value">{calcular_limite_uf(total_ingresos_netos):,.2f} UF</div></div>
-        <div><div class="label">CAM (Crédito Máx.)</div><div class="value">{fmt(capacidad.get('cam', 0))}</div></div>
-      </div>
-    </div>
-
-    <!-- DEUDAS -->
-    <div class="section">
-      <div class="section-title">📊 Deudas Vigentes</div>
-      {"""<table><tr><th>Tipo</th><th>Institución</th><th>Cuota</th><th>Saldo Total</th><th>Cuotas Rest.</th><th>Descuenta</th></tr>""" + deudas_rows + "</table>" if deudas else '<p style="color: #9ca3af; font-size: 14px;">Sin deudas registradas.</p>'}
-    </div>
-
-    <!-- ACTIVOS -->
-    <div class="section">
-      <div class="section-title">🏠 Activos</div>
-      {"""<table><tr><th>Nombre</th><th>Valor Estimado</th></tr>""" + activos_rows + "</table>" if activos_rows else '<p style="color: #9ca3af; font-size: 14px;">Sin activos registrados.</p>'}
-    </div>
-
-    <!-- CUENTAS -->
-    <div class="section">
-      <div class="section-title">🏛️ Cuentas Bancarias</div>
-      {"""<table><tr><th>Tipo</th><th>Banco / Institución</th></tr>""" + cuentas_rows + "</table>" if cuentas_rows else '<p style="color: #9ca3af; font-size: 14px;">Sin cuentas registradas.</p>'}
+    <div class="header-right">
+      <div class="line">División Residencial Premium</div>
+      <div class="line">15 Años de Experiencia</div>
     </div>
   </div>
+
+  <div class="divider"></div>
+
+  <div class="client-name">{nombre_cliente}</div>
+  <div class="client-sub">Registrado el {fecha} &middot; {esc(c.get('profesion', 'N/A'))}</div>
+
+  <div class="highlight">
+    <div class="highlight-item">
+      <div class="num">{fmt(total_ingresos_brutos)}</div>
+      <div class="lbl">Ingresos Totales / Mes</div>
+    </div>
+    <div class="highlight-item">
+      <div class="num">{fmt(total_ingresos_netos)}</div>
+      <div class="lbl">Ingresos Netos / Mes</div>
+    </div>
+    <div class="highlight-item">
+      <div class="num">{calcular_limite_uf(total_ingresos_netos):,.2f}</div>
+      <div class="lbl">Límite Máx. Crédito (UF)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Datos Personales</div>
+    <div class="grid-2">
+      <div><div class="label">Nombre</div><div class="value">{nombre_cliente}</div></div>
+      <div><div class="label">RUT</div><div class="value">{esc(c.get('rut'))}</div></div>
+      <div><div class="label">Teléfono</div><div class="value">{esc(c.get('telefono'))}</div></div>
+      <div><div class="label">Correo</div><div class="value">{esc(c.get('correo'))}</div></div>
+      <div><div class="label">Estado Civil</div><div class="value">{esc(c.get('estado_civil'))}</div></div>
+      <div><div class="label">Profesión</div><div class="value">{esc(c.get('profesion'))}</div></div>
+      <div><div class="label">Dirección</div><div class="value">{esc(c.get('direccion'))}</div></div>
+      <div><div class="label">Objetivo</div><div class="value">{esc(c.get('objetivo'))}{f" ({esc(c.get('sub_objetivo', ''))})" if c.get('sub_objetivo') else ''}</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Ingresos Mensuales</div>
+    <table>
+      <tr><th>Fuente</th><th>Monto</th></tr>
+      <tr><td>Renta</td><td>{fmt(ingresos.get('renta', 0))}</td></tr>
+      <tr><td>Dividendos</td><td>{fmt(ingresos.get('dividendos', 0))}</td></tr>
+      <tr><td>Pensiones</td><td>{fmt(ingresos.get('pensiones', 0))}</td></tr>
+      <tr><td>Arriendos</td><td>{fmt(ingresos.get('arriendos', 0))}</td></tr>
+      <tr class="total"><td>TOTAL</td><td>{fmt(total_ingresos_brutos)}</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Capacidad de Inversión</div>
+    <div class="grid-2">
+      <div><div class="label">Límite Máx. Crédito</div><div class="value"><span class="badge">{calcular_limite_uf(total_ingresos_netos):,.2f} UF</span></div></div>
+      <div><div class="label">CAM</div><div class="value">{fmt(capacidad.get('cam', 0))}</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Deudas Vigentes</div>
+    {"""<table><tr><th>Tipo</th><th>Institución</th><th>Cuota</th><th>Saldo Total</th><th>Cuotas Rest.</th><th>Descuenta</th></tr>""" + deudas_rows + "</table>" if deudas else '<div class="empty-state">Sin deudas registradas.</div>'}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Activos</div>
+    {"""<table><tr><th>Nombre</th><th>Valor Estimado</th></tr>""" + activos_rows + "</table>" if activos_rows else '<div class="empty-state">Sin activos registrados.</div>'}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cuentas Bancarias</div>
+    {"""<table><tr><th>Tipo</th><th>Banco / Institución</th></tr>""" + cuentas_rows + "</table>" if cuentas_rows else '<div class="empty-state">Sin cuentas registradas.</div>'}
+  </div>
+
   <div class="footer">
-    Generado por Consultor Inmobiliario &bull; {fecha}
+    <span>RyR Consultor Inmobiliario &mdash; Documento Confidencial</span>
+    <span>Generado el {fecha}</span>
   </div>
 </div>
 </body>

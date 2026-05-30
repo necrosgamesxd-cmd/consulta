@@ -1,5 +1,5 @@
 """
-Consultor Inmobiliario - Aplicación Principal
+RyR Consultor Inmobiliario - Aplicación Principal
 """
 
 import streamlit as st
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 st.set_page_config(
-    page_title="Consultor Inmobiliario",
+    page_title="RyR Consultor Inmobiliario",
     page_icon="🏢",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -17,36 +17,222 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+    html, body, .stApp {
+        background-color: #121212;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+    }
+
     .stApp header {background-color: transparent;}
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Inter', sans-serif;
+        color: #ffffff !important;
+    }
+
     .main-header {
         text-align: center;
         padding: 2rem 0 1rem 0;
     }
     .main-header h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #1E3A5F;
+        font-family: 'Playfair Display', serif !important;
+        font-size: 2.8rem !important;
+        font-weight: 700 !important;
+        color: #D4AF37 !important;
         margin-bottom: 0.3rem;
+        letter-spacing: 0.5px;
     }
     .main-header p {
         font-size: 1.1rem;
-        color: #6B7280;
+        color: #9ca3af;
+        font-weight: 300;
     }
+    .main-header .subtitle {
+        font-size: 0.75rem;
+        color: #6b7280;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 4px;
+    }
+
     .card {
-        background: white;
-        border-radius: 10px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border: 1px solid #E5E7EB;
+        border: 1px solid rgba(212,175,55,0.15);
         transition: transform 0.2s, box-shadow 0.2s;
+        color: #d1d5db;
     }
     .card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        border-color: rgba(212,175,55,0.3);
     }
-    .feature-icon {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
+    .card h3 {
+        color: #ffffff !important;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    .card ul {
+        padding-left: 1.2rem;
+    }
+    .card li {
+        margin-bottom: 0.4rem;
+        font-size: 0.9rem;
+    }
+
+    .stButton button {
+        background: rgba(212,175,55,0.1) !important;
+        color: #D4AF37 !important;
+        border: 1px solid rgba(212,175,55,0.3) !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s !important;
+    }
+    .stButton button:hover {
+        background: rgba(212,175,55,0.2) !important;
+        border-color: #D4AF37 !important;
+        box-shadow: 0 2px 12px rgba(212,175,55,0.15) !important;
+    }
+    .stButton button[kind="primary"] {
+        background: linear-gradient(135deg, #D4AF37, #b8962f) !important;
+        color: #121212 !important;
+        border: none !important;
+        font-weight: 600 !important;
+    }
+    .stButton button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #e0b845, #D4AF37) !important;
+        box-shadow: 0 4px 16px rgba(212,175,55,0.3) !important;
+    }
+
+    .stTextInput input, .stTextArea textarea, .stNumberInput input, .stSelectbox div, .stMultiselect div {
+        background: rgba(255,255,255,0.05) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 8px !important;
+    }
+    .stTextInput input:focus, .stTextArea textarea:focus, .stNumberInput input:focus {
+        border-color: #D4AF37 !important;
+        box-shadow: 0 0 0 2px rgba(212,175,55,0.15) !important;
+    }
+
+    .stDateInput input, .stTimeInput input {
+        background: rgba(255,255,255,0.05) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+
+    div[data-testid="stExpander"] {
+        background: rgba(255,255,255,0.02) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+        border-radius: 12px !important;
+    }
+    div[data-testid="stExpander"] summary {
+        color: #ffffff !important;
+        font-weight: 500;
+    }
+
+    .stCaption, .stMarkdown p, .stMarkdown li, .stMarkdown span {
+        color: #d1d5db;
+    }
+
+    .stDataFrame, div[data-testid="stTable"] {
+        background: rgba(255,255,255,0.02) !important;
+        color: #ffffff !important;
+    }
+
+    .stSidebar {
+        background: #0f0f1a !important;
+        border-right: 1px solid rgba(255,255,255,0.05) !important;
+    }
+    .stSidebar .stMarkdown h3 {
+        color: #D4AF37 !important;
+        font-family: 'Playfair Display', serif !important;
+    }
+
+    .stAlert {
+        background: rgba(212,175,55,0.08) !important;
+        border: 1px solid rgba(212,175,55,0.2) !important;
+        color: #ffffff !important;
+        border-radius: 12px !important;
+    }
+    .stAlert.stSuccess {
+        background: rgba(212,175,55,0.1) !important;
+        border-color: rgba(212,175,55,0.3) !important;
+    }
+    .stAlert.stWarning {
+        background: rgba(255,183,77,0.08) !important;
+        border-color: rgba(255,183,77,0.2) !important;
+    }
+    .stAlert.stError {
+        background: rgba(239,68,68,0.08) !important;
+        border-color: rgba(239,68,68,0.2) !important;
+    }
+
+    .stTabs [data-baseweb="tab-list"] {
+        border-bottom-color: rgba(255,255,255,0.1) !important;
+    }
+    .stTabs [data-baseweb="tab"] {
+        color: #9ca3af !important;
+        font-weight: 500;
+    }
+    .stTabs [aria-selected="true"] {
+        color: #D4AF37 !important;
+        border-bottom-color: #D4AF37 !important;
+    }
+
+    hr {
+        border-color: rgba(255,255,255,0.06) !important;
+    }
+
+    div[data-testid="stFileUploader"] {
+        background: rgba(255,255,255,0.02) !important;
+        border: 1px dashed rgba(212,175,55,0.3) !important;
+        border-radius: 12px !important;
+    }
+
+    .stCheckbox label, .stRadio label {
+        color: #d1d5db !important;
+    }
+
+    section[data-testid="stSidebar"] .stButton button {
+        font-size: 0.8rem !important;
+    }
+
+    div[data-testid="stDownloadButton"] button {
+        background: rgba(212,175,55,0.15) !important;
+    }
+
+    .st-bb, .st-at {
+        background-color: transparent !important;
+    }
+
+    .st-bw, .st-bx {
+        background: rgba(255,255,255,0.05) !important;
+    }
+
+    div[role="status"] {
+        background: rgba(212,175,55,0.08) !important;
+        border: 1px solid rgba(212,175,55,0.2) !important;
+        border-radius: 12px !important;
+    }
+
+    .st-b {
+        color: #D4AF37 !important;
+    }
+
+    .st-dm, .st-dl {
+        color: #D4AF37 !important;
+    }
+
+    .st-spinner {
+        border-color: #D4AF37 !important;
+    }
+
+    div.st-bs {
+        background-color: rgba(255,255,255,0.03) !important;
     }
     </style>
     """,
@@ -56,7 +242,7 @@ st.markdown(
 # ===== SIDEBAR =====
 with st.sidebar:
     st.image("https://img.icons8.com/fluency/96/real-estate.png", width=60)
-    st.markdown("### 🏢 Consultor Inmobiliario")
+    st.markdown("### RyR Consultor Inmobiliario")
     st.markdown("---")
 
     # Selector de proveedor AI

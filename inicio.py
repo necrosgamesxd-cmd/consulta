@@ -1,11 +1,13 @@
 """
-Página de inicio del Consultor Inmobiliario
+Página de inicio de RyR Consultor Inmobiliario
 """
 
 import streamlit as st
 
 st.markdown(
-    '<div class="main-header"><h1>🏢 Consultor Inmobiliario</h1>'
+    '<div class="main-header">'
+    '<div class="subtitle">RyR Consultor Inmobiliario</div>'
+    '<h1>🏢 Consultor Inmobiliario</h1>'
     "<p>Asistente inteligente para matching de clientes con proyectos inmobiliarios</p></div>",
     unsafe_allow_html=True,
 )

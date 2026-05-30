@@ -366,67 +366,103 @@ if st.session_state.chat_messages:
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informe de Matching - {c['nombre']}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-  body {{ font-family: 'Inter', sans-serif; background: #f0f2f5; padding: 40px 20px; color: #1a1a2e; }}
-  .container {{ max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); overflow: hidden; }}
-  .header {{ background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 32px 40px; }}
-  .header h1 {{ font-size: 28px; font-weight: 700; margin-bottom: 4px; }}
-  .header .sub {{ font-size: 14px; opacity: 0.8; }}
-  .header .fecha {{ font-size: 12px; opacity: 0.6; margin-top: 8px; }}
-  .body {{ padding: 32px 40px; }}
-  .section {{ margin-bottom: 28px; }}
-  .section-title {{ font-size: 18px; font-weight: 600; color: #0f3460; border-bottom: 2px solid #e8ecf1; padding-bottom: 8px; margin-bottom: 16px; }}
-  .grid-2 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }}
-  .grid-item .label {{ font-size: 13px; color: #6b7280; font-weight: 500; }}
-  .grid-item .value {{ font-size: 15px; font-weight: 600; color: #1a1a2e; }}
-  .highlight {{ background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; }}
-  .highlight .num {{ font-size: 22px; font-weight: 700; color: #0f3460; }}
-  .highlight .lbl {{ font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }}
-  .msg {{ padding: 16px; border-radius: 12px; margin-bottom: 12px; }}
-  .msg-role {{ font-size: 13px; font-weight: 600; margin-bottom: 6px; }}
-  .msg-content {{ font-size: 14px; line-height: 1.6; color: #1a1a2e; white-space: pre-wrap; }}
-  .footer {{ text-align: center; padding: 24px 40px; font-size: 12px; color: #9ca3af; border-top: 1px solid #f3f4f6; }}
-  @media print {{ body {{ background: white; padding: 0; }} .container {{ box-shadow: none; }} }}
+  body {{ background: #121212; font-family: 'Inter', sans-serif; color: #ffffff; padding: 0; min-height: 100vh; }}
+  .page {{ max-width: 1000px; margin: 0 auto; padding: 48px 56px; }}
+  .header {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 48px; }}
+  .brand {{ font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; color: #D4AF37; letter-spacing: 0.5px; }}
+  .brand-sub {{ font-size: 11px; color: #6b7280; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }}
+  .header-right {{ text-align: right; }}
+  .header-right .line {{ font-size: 11px; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400; }}
+  .header-right .line + .line {{ margin-top: 2px; }}
+  .divider {{ width: 60px; height: 2px; background: linear-gradient(90deg, #D4AF37, rgba(212,175,55,0.2)); margin-bottom: 28px; }}
+  .title {{ font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: #ffffff; line-height: 1.2; margin-bottom: 4px; }}
+  .subtitle {{ font-size: 14px; color: #6b7280; font-weight: 300; margin-bottom: 32px; }}
+  .section {{ margin-bottom: 32px; }}
+  .section-title {{ font-family: 'Playfair Display', serif; font-size: 15px; color: #D4AF37; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }}
+  .section-title::after {{ content: ''; display: block; width: 40px; height: 1px; background: rgba(212,175,55,0.3); margin-top: 8px; }}
+  .grid-2 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px 32px; }}
+  .grid-item .label {{ font-size: 11px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }}
+  .grid-item .value {{ font-size: 15px; font-weight: 500; color: #ffffff; margin-top: 2px; }}
+  .highlight {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }}
+  .highlight-item {{ background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.12); border-radius: 12px; padding: 20px 24px; text-align: center; }}
+  .highlight-item .num {{ font-size: 22px; font-weight: 700; color: #D4AF37; }}
+  .highlight-item .lbl {{ font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 6px; }}
+  .msg {{ padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.06); }}
+  .msg-role {{ font-size: 12px; font-weight: 600; margin-bottom: 6px; letter-spacing: 0.5px; }}
+  .msg-content {{ font-size: 14px; line-height: 1.7; color: #d1d5db; white-space: pre-wrap; }}
+  .limite-box {{ background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2); border-radius: 12px; padding: 20px 24px; text-align: center; }}
+  .limite-box .num {{ font-size: 28px; font-weight: 700; color: #D4AF37; }}
+  .limite-box .lbl {{ font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }}
+  .footer {{ margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 11px; color: #4b5563; letter-spacing: 0.5px; }}
+  @media print {{ body {{ background: #121212; }} }}
+  @media (max-width: 768px) {{ .page {{ padding: 24px; }} .highlight {{ grid-template-columns: 1fr; }} .grid-2 {{ grid-template-columns: 1fr; }} .title {{ font-size: 26px; }} }}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="page">
   <div class="header">
-    <h1>Informe de Matching</h1>
-    <div class="sub">Consultor Inmobiliario</div>
-    <div class="fecha">{fecha}</div>
-  </div>
-  <div class="body">
-    <div class="section">
-      <div class="section-title">Perfil financiero del cliente</div>
-      <div class="grid-2">
-        <div class="grid-item"><div class="label">Nombre</div><div class="value">{nombre_cliente}</div></div>
-        <div class="grid-item"><div class="label">RUT</div><div class="value">{esc(c.get('rut'))}</div></div>
-        <div class="grid-item"><div class="label">Profesión</div><div class="value">{esc(c.get('profesion'))}</div></div>
-        <div class="grid-item"><div class="label">Objetivo</div><div class="value">{esc(c.get('objetivo'))}</div></div>
-        {estrategia_html}
-      </div>
+    <div>
+      <div class="brand">RyR Consultor Inmobiliario</div>
+      <div class="brand-sub">Informe de Matching Privado</div>
     </div>
-    <div class="highlight">
-      <div><div class="num">{fmt(total_ingresos)}</div><div class="lbl">Ingresos / mes</div></div>
-      <div><div class="num">{fmt(capacidad.get('ahorro_pie', 0))}</div><div class="lbl">Ahorro para pie</div></div>
-      <div><div class="num">{fmt(capacidad.get('cam', 0))}</div><div class="lbl">CAM</div></div>
-    </div>
-    {descuento_html}
-    <div class="section">
-      <div class="section-title">Límite de compra</div>
-      <div style="font-size: 24px; font-weight: 700; color: #0f3460;">{limite_uf:,.2f} UF</div>
-    </div>
-    <div class="section">
-      <div class="section-title">Conversación</div>
-      {chat_html}
+    <div class="header-right">
+      <div class="line">División Residencial Premium</div>
+      <div class="line">15 Años de Experiencia</div>
     </div>
   </div>
+
+  <div class="divider"></div>
+
+  <div class="title">Informe de Matching</div>
+  <div class="subtitle">{nombre_cliente} &middot; {fecha}</div>
+
+  <div class="section">
+    <div class="section-title">Perfil Financiero del Cliente</div>
+    <div class="grid-2">
+      <div class="grid-item"><div class="label">Nombre</div><div class="value">{nombre_cliente}</div></div>
+      <div class="grid-item"><div class="label">RUT</div><div class="value">{esc(c.get('rut'))}</div></div>
+      <div class="grid-item"><div class="label">Profesión</div><div class="value">{esc(c.get('profesion'))}</div></div>
+      <div class="grid-item"><div class="label">Objetivo</div><div class="value">{esc(c.get('objetivo'))}</div></div>
+      {estrategia_html}
+    </div>
+  </div>
+
+  <div class="highlight">
+    <div class="highlight-item">
+      <div class="num">{fmt(total_ingresos)}</div>
+      <div class="lbl">Ingresos / Mes</div>
+    </div>
+    <div class="highlight-item">
+      <div class="num">{fmt(capacidad.get('ahorro_pie', 0))}</div>
+      <div class="lbl">Ahorro para Pie</div>
+    </div>
+    <div class="highlight-item">
+      <div class="num">{fmt(capacidad.get('cam', 0))}</div>
+      <div class="lbl">CAM</div>
+    </div>
+  </div>
+  {descuento_html}
+  <div class="section">
+    <div class="section-title">Límite de Compra</div>
+    <div class="limite-box">
+      <div class="num">{limite_uf:,.2f} UF</div>
+      <div class="lbl">Máximo Disponible</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Conversación</div>
+    {chat_html}
+  </div>
+
   <div class="footer">
-    Informe generado por Consultor Inmobiliario &mdash; {fecha}
+    <span>RyR Consultor Inmobiliario &mdash; Documento Confidencial</span>
+    <span>Generado el {fecha}</span>
   </div>
 </div>
 </body>

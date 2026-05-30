@@ -87,7 +87,7 @@ def _configurar_remote():
 
 def _configurar_git_user():
     _git("config", "user.email", "consultor@inmobiliario.app")
-    _git("config", "user.name", "Consultor Inmobiliario")
+    _git("config", "user.name", "RyR Consultor Inmobiliario")
 
 
 def commit_y_push(mensaje=None):
