@@ -97,14 +97,14 @@ def get_clientes():
 
 
 def add_cliente(data):
-    """Agrega un nuevo cliente con su ficha financiera."""
+    """Agrega un nuevo cliente con su ficha financiera. El nuevo cliente queda al inicio de la lista."""
     clientes = get_clientes()
     cliente = {
         "id": str(uuid.uuid4()),
         "created_at": datetime.now().isoformat(),
     }
     cliente.update(data)
-    clientes.append(cliente)
+    clientes.insert(0, cliente)
     _guardar_json(CLIENTES_FILE, clientes)
     return cliente
 
