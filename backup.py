@@ -29,7 +29,13 @@ SNAPSHOT_DIR = os.path.join(BASE_DIR, "data", "snapshots")
 
 
 def _obtener_token():
-    """Obtiene GITHUB_TOKEN desde .env, variable de entorno o secrets de Streamlit."""
+    """Obtiene GITHUB_TOKEN desde .env, variable de entorno o secrets de Streamlit.
+    Recarga .env en cada llamada para permitir cambios sin reinicio."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(override=True)
+    except Exception:
+        pass
     token = os.getenv("GITHUB_TOKEN")
     if token:
         return token
