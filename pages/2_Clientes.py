@@ -5,6 +5,7 @@ Página de gestión de clientes con ficha financiera completa.
 import streamlit as st
 from html import escape
 from storage import get_clientes, add_cliente, delete_cliente
+from utils import calcular_limite_uf
 
 st.markdown("# 👥 Clientes")
 st.markdown("Registra la ficha financiera completa de tus clientes.")
@@ -99,7 +100,7 @@ def _generar_ficha_html(cliente):
     <div class="highlight">
       <div><div class="num">{fmt(total_ingresos_brutos)}</div><div class="lbl">Ingresos Totales</div></div>
       <div><div class="num">{fmt(total_ingresos_netos)}</div><div class="lbl">Ingresos Netos</div></div>
-      <div><div class="num">{fmt(capacidad.get('ahorro_pie', 0))}</div><div class="lbl">Ahorro para Pie</div></div>
+      <div><div class="num">{calcular_limite_uf(total_ingresos_netos):,.2f}</div><div class="lbl">Límite Máx. Crédito (UF)</div></div>
     </div>
 
     <!-- DATOS PERSONALES -->
@@ -134,7 +135,7 @@ def _generar_ficha_html(cliente):
     <div class="section">
       <div class="section-title">🏦 Capacidad de Inversión</div>
       <div class="grid-2">
-        <div><div class="label">Ahorro para Pie</div><div class="value">{fmt(capacidad.get('ahorro_pie', 0))}</div></div>
+        <div><div class="label">Límite Máx. Crédito</div><div class="value">{calcular_limite_uf(total_ingresos_netos):,.2f} UF</div></div>
         <div><div class="label">CAM (Crédito Máx.)</div><div class="value">{fmt(capacidad.get('cam', 0))}</div></div>
       </div>
     </div>
