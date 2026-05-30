@@ -132,6 +132,19 @@ with st.sidebar:
                     with st.expander("🔍 Ver error completo"):
                         st.code(msg)
 
+    from backup import LOG_FILE
+    if st.button("📋 Ver historial de backups", use_container_width=True, type="secondary"):
+        try:
+            with open(LOG_FILE, "r", encoding="utf-8") as f:
+                contenido = f.read()
+            if contenido:
+                with st.expander("📋 Historial de backups", expanded=True):
+                    st.text(contenido)
+            else:
+                st.info("No hay registros de backup aún.")
+        except FileNotFoundError:
+            st.info("No hay registros de backup aún.")
+
 # ===== NAVEGACIÓN PROFESIONAL =====
 pages = {
     "Inicio": [
