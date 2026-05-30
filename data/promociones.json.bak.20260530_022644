@@ -43,14 +43,5 @@
     "descripcion_promocion": "Tipología: 1d1b, Bono Pie: 0.1, A.G: 4 años y administración gratuita, Otras Promos: PROMOCION DEPTO 2D2B + ESTACIONAMIENTO= UF 4.000 ( PISO 2 AL 8), Reserva a $0: No",
     "archivo_original": "Proyectos Cyber Junio.xlsx",
     "created_at": "2026-05-27T21:25:52.493309"
-  },
-  {
-    "id": "595e5df4-a6b3-40e9-ae56-7f9835d62a19",
-    "proyecto_id": "d97d3068-8fa6-494e-90ed-236b6a8c5281",
-    "nombre_proyecto": "ambar",
-    "mes": "promo mayo",
-    "descripcion_promocion": "Tipología: , Bono Pie: 5%, UpFront: Arriendo garantizado 3 años, A.G: True, Otras Promos: APORTE PIE hasta un 5%, Reserva a $0: si",
-    "archivo_original": "Proyectos Cyber Junio.xlsx",
-    "created_at": "2026-05-30T02:26:44.048364"
   }
 ]
