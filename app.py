@@ -277,6 +277,20 @@ with st.sidebar:
     st.markdown("---")
     st.caption(f"Powered by {config['name']}")
 
+    # ===== TOKEN COUNTER =====
+    st.markdown("### 📊 Consumo del día")
+    tok = st.session_state.setdefault("token_usage", {"prompt": 0, "completion": 0, "total": 0})
+    total = tok.get("total", 0)
+    prompt = tok.get("prompt", 0)
+    completion = tok.get("completion", 0)
+    st.markdown(f"**{total:,}** tokens totales")
+    st.caption(f"⬆️ {prompt:,} enviados · ⬇️ {completion:,} recibidos")
+    limite_estimado = 1000000
+    pct = min(total / limite_estimado, 1.0)
+    modelo_label = "70B" if st.session_state.get("matching_tier", "super") == "super" else "8B"
+    st.progress(pct, text=f"{pct*100:.1f}% del límite diario estimado ({modelo_label})")
+    st.markdown("---")
+
     # ===== BACKUP / GIT =====
     st.markdown("### 💾 Backup")
 

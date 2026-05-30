@@ -82,6 +82,15 @@ def get_model_for_provider(tier="super", provider=None):
     return config["models"].get(tier, config["models"]["super"])
 
 
+def _acumular_usage(response):
+    """Acumula tokens de una respuesta OpenAI no-streaming en session_state."""
+    if hasattr(response, 'usage') and response.usage:
+        usage = st.session_state.setdefault("token_usage", {"prompt": 0, "completion": 0, "total": 0})
+        usage["prompt"] += response.usage.prompt_tokens or 0
+        usage["completion"] += response.usage.completion_tokens or 0
+        usage["total"] += response.usage.total_tokens or 0
+
+
 def _get_api_key(provider=None):
     """Obtiene la API key: st.secrets > variable de entorno."""
     provider = provider or get_active_provider()
@@ -266,6 +275,7 @@ def generar_descripcion_con_ai(nombre, contexto_web=""):
             temperature=0.7,
             max_tokens=2000,
         )
+        _acumular_usage(response)
         return response.choices[0].message.content
     except Exception as e:
         return f"Error al generar descripción: {str(e)}"
@@ -303,6 +313,7 @@ def analizar_pdf_con_ai(nombre, texto_pdf):
             temperature=0.7,
             max_tokens=2000,
         )
+        _acumular_usage(response)
         return response.choices[0].message.content
     except Exception as e:
         return f"Error al analizar PDF: {str(e)}"
@@ -357,12 +368,13 @@ def analizar_cotizacion_con_ai(nombre_proyecto, cotizaciones):
             temperature=0.7,
             max_tokens=1500,
         )
+        _acumular_usage(response)
         return response.choices[0].message.content
     except Exception as e:
         return f"Error al analizar cotizaciones: {str(e)}"
 
 
-def generar_recomendacion_inicial(cliente, proyectos):
+def generar_recomendacion_inicial(cliente, proyectos, tier="super"):
     """
     Genera la primera recomendación: qué proyecto es más acorde al perfil del cliente.
     """
@@ -494,7 +506,7 @@ DEUDAS VIGENTES:
 
     try:
         response = client.chat.completions.create(
-            model=get_model_for_provider("super"),
+            model=get_model_for_provider(tier),
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -502,6 +514,7 @@ DEUDAS VIGENTES:
             temperature=0.7,
             max_tokens=2000,
         )
+        _acumular_usage(response)
         return response.choices[0].message.content
     except Exception as e:
         return f"Error al generar recomendación: {str(e)}"
@@ -550,6 +563,7 @@ FORMATO REQUERIDO:
             temperature=0.0, # Temperatura 0 para máxima precisión
             max_tokens=3000,
         )
+        _acumular_usage(response)
         texto = response.choices[0].message.content.strip()
         
         # --- ESTRATEGIA DE RECUPERACIÓN DE "MAGIA" ---
@@ -595,10 +609,11 @@ FORMATO REQUERIDO:
         return []
 
 
-def chat_stream(mensajes):
+def chat_stream(mensajes, tier="super"):
     """
-    Genera una respuesta en streaming usando Nemotron 3 Super.
+    Genera una respuesta en streaming.
     mensajes: lista de dicts con role y content para el historial del chat.
+    tier: "super" (LLaMA 3.3 70B) o "nano" (LLaMA 3.1 8B).
     Retorna un generador que emite fragmentos de texto.
     """
     client = get_ai_client()
@@ -617,14 +632,20 @@ def chat_stream(mensajes):
 
     try:
         response = client.chat.completions.create(
-            model=get_model_for_provider("super"),
+            model=get_model_for_provider(tier),
             messages=messages,
             temperature=0.7,
             max_tokens=2000,
             stream=True,
+            stream_options={"include_usage": True},
         )
         for chunk in response:
             if chunk.choices[0].delta.content:
                 yield chunk.choices[0].delta.content
+            if hasattr(chunk, 'usage') and chunk.usage:
+                usage = st.session_state.setdefault("token_usage", {"prompt": 0, "completion": 0, "total": 0})
+                usage["prompt"] += chunk.usage.prompt_tokens or 0
+                usage["completion"] += chunk.usage.completion_tokens or 0
+                usage["total"] += chunk.usage.total_tokens or 0
     except Exception as e:
         yield f"\n\n⚠️ Error: {str(e)}"
