@@ -4,7 +4,7 @@ Página de gestión de clientes con ficha financiera completa.
 
 import streamlit as st
 from html import escape
-from storage import get_clientes, add_cliente, delete_cliente
+from storage import get_clientes, add_cliente, update_cliente, delete_cliente
 from utils import calcular_limite_uf
 
 st.markdown("# 👥 Clientes")
@@ -310,7 +310,7 @@ if not clientes:
 else:
     for c in clientes:
         with st.container():
-            cols = st.columns([1, 4, 2, 1, 1])
+            cols = st.columns([1, 4, 2, 1, 1, 1])
             with cols[0]:
                 st.markdown(f"<h2 style='text-align:center'>👤</h2>", unsafe_allow_html=True)
             with cols[1]:
@@ -332,7 +332,6 @@ else:
                     st.caption(f"📉 Neto: ${total_ingresos_netos:,}")
                 st.markdown(f"🏦 Pie: **${capacidad.get('ahorro_pie', 0):,}**")
             with cols[3]:
-                # Botón de descarga de ficha
                 html_ficha = _generar_ficha_html(c)
                 st.download_button(
                     label="📄",
@@ -343,9 +342,74 @@ else:
                     help="Descargar ficha financiera completa",
                 )
             with cols[4]:
+                if st.button("✏️", key=f"edit_{c['id']}", help="Editar cliente"):
+                    st.session_state[f"editando_cliente_{c['id']}"] = True
+                    st.rerun()
+            with cols[5]:
                 if st.button("🗑️", key=f"del_{c['id']}", help="Eliminar cliente"):
                     delete_cliente(c["id"])
                     st.rerun()
+
+            # ===== FORMULARIO DE EDICIÓN =====
+            if st.session_state.get(f"editando_cliente_{c['id']}", False):
+                with st.container(border=True):
+                    st.markdown(f"#### ✏️ Editando: {c['nombre']}")
+                    cap = c.get("capacidad_inversion", {})
+                    ing = c.get("ingresos", {})
+
+                    edit_nombre = st.text_input("Nombre", value=c.get("nombre", ""), key=f"e_nombre_{c['id']}")
+                    edit_telefono = st.text_input("Teléfono", value=c.get("telefono", ""), key=f"e_tel_{c['id']}")
+                    edit_correo = st.text_input("Correo", value=c.get("correo", ""), key=f"e_mail_{c['id']}")
+                    edit_rut = st.text_input("RUT", value=c.get("rut", ""), key=f"e_rut_{c['id']}")
+                    edit_profesion = st.text_input("Profesión", value=c.get("profesion", ""), key=f"e_prof_{c['id']}")
+                    edit_objetivo = st.selectbox("Objetivo", ["Vivir", "Invertir"], index=0 if c.get("objetivo") == "Vivir" else 1, key=f"e_obj_{c['id']}")
+                    edit_direccion = st.text_input("Dirección", value=c.get("direccion", ""), key=f"e_dir_{c['id']}")
+
+                    st.markdown("**💰 Ingresos**")
+                    col_i1, col_i2 = st.columns(2)
+                    with col_i1:
+                        edit_renta = st.number_input("Renta", value=ing.get("renta", 0), key=f"e_renta_{c['id']}")
+                        edit_dividendos = st.number_input("Dividendos", value=ing.get("dividendos", 0), key=f"e_div_{c['id']}")
+                    with col_i2:
+                        edit_pensiones = st.number_input("Pensiones", value=ing.get("pensiones", 0), key=f"e_pens_{c['id']}")
+                        edit_arriendos = st.number_input("Arriendos", value=ing.get("arriendos", 0), key=f"e_arr_{c['id']}")
+
+                    st.markdown("**🏦 Capacidad de Inversión**")
+                    col_c1, col_c2 = st.columns(2)
+                    with col_c1:
+                        edit_ahorro_pie = st.number_input("Ahorro para pie ($)", value=cap.get("ahorro_pie", 0), key=f"e_pie_{c['id']}")
+                    with col_c2:
+                        edit_cam = st.number_input("CAM ($)", value=cap.get("cam", 0), key=f"e_cam_{c['id']}")
+
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1:
+                        if st.button("💾 Guardar cambios", type="primary", key=f"save_cliente_{c['id']}", use_container_width=True):
+                            update_cliente(c["id"], **{
+                                "nombre": edit_nombre,
+                                "telefono": edit_telefono,
+                                "correo": edit_correo,
+                                "rut": edit_rut,
+                                "profesion": edit_profesion,
+                                "objetivo": edit_objetivo,
+                                "direccion": edit_direccion,
+                                "ingresos": {
+                                    "renta": edit_renta,
+                                    "dividendos": edit_dividendos,
+                                    "pensiones": edit_pensiones,
+                                    "arriendos": edit_arriendos,
+                                },
+                                "capacidad_inversion": {
+                                    "ahorro_pie": edit_ahorro_pie,
+                                    "cam": edit_cam,
+                                },
+                            })
+                            st.session_state[f"editando_cliente_{c['id']}"] = False
+                            st.success("✅ Cliente actualizado")
+                            st.rerun()
+                    with col_btn2:
+                        if st.button("❌ Cancelar", key=f"cancel_cliente_{c['id']}", use_container_width=True):
+                            st.session_state[f"editando_cliente_{c['id']}"] = False
+                            st.rerun()
 
             with st.expander("📋 Ver ficha financiera completa"):
                 col1, col2 = st.columns(2)

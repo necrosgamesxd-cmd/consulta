@@ -194,16 +194,45 @@ else:
                 else:
                     st.markdown("### 💰\n—", unsafe_allow_html=True)
             with cols[3]:
-                col_b1, col_b2 = st.columns(2)
+                col_b1, col_b2, col_b3 = st.columns(3)
                 with col_b1:
+                    if st.button("✏️", key=f"edit_{p['id']}", help="Editar proyecto"):
+                        st.session_state[f"editando_proyecto_{p['id']}"] = True
+                        st.rerun()
+                with col_b2:
                     if st.button("🏷️", key=f"tag_{p['id']}", help="Editar etiquetas"):
                         st.session_state[f"editando_tags_{p['id']}"] = True
                         st.rerun()
-                with col_b2:
+                with col_b3:
                     if st.button("🗑️", key=f"del_{p['id']}", help="Eliminar proyecto"):
                         delete_proyecto(p["id"])
                         st.rerun()
                         st.stop()
+
+            # ===== FORMULARIO DE EDICIÓN =====
+            if st.session_state.get(f"editando_proyecto_{p['id']}", False):
+                with st.container(border=True):
+                    st.markdown(f"#### ✏️ Editando: {p['nombre']}")
+                    edit_nombre = st.text_input("Nombre", value=p.get("nombre", ""), key=f"e_nombre_{p['id']}")
+                    edit_descripcion = st.text_area("Descripción", value=p.get("descripcion", ""), key=f"e_desc_{p['id']}", height=200)
+                    edit_precio = st.number_input("Precio (UF)", min_value=0.0, value=float(p.get("precio_uf", 0)), format="%.2f", key=f"e_precio_{p['id']}")
+                    edit_etiquetas = st.multiselect(
+                        "Etiquetas",
+                        ["Rentabilidad", "Libertad financiera", "Jubilación"],
+                        default=p.get("etiquetas", []),
+                        key=f"e_tags_{p['id']}",
+                    )
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1:
+                        if st.button("💾 Guardar cambios", type="primary", key=f"save_proy_{p['id']}", use_container_width=True):
+                            update_proyecto(p["id"], nombre=edit_nombre, descripcion=edit_descripcion, precio_uf=edit_precio, etiquetas=edit_etiquetas)
+                            st.session_state[f"editando_proyecto_{p['id']}"] = False
+                            st.success("✅ Proyecto actualizado")
+                            st.rerun()
+                    with col_btn2:
+                        if st.button("❌ Cancelar", key=f"cancel_proy_{p['id']}", use_container_width=True):
+                            st.session_state[f"editando_proyecto_{p['id']}"] = False
+                            st.rerun()
         
         # ===== SECCIÓN DE COTIZACIONES =====
         with st.expander(f"📝 Cotizaciones - {p['nombre']}", expanded=False):

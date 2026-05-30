@@ -12,6 +12,7 @@ from storage import (
     get_promociones_by_mes,
     get_meses_promociones,
     delete_promocion,
+    update_promocion,
 )
 from utils import analizar_excel_promociones, verificar_api_key
 
@@ -205,7 +206,7 @@ if meses:
     if promociones:
         for promo in promociones:
             with st.container(border=True):
-                col1, col2, col3 = st.columns([2, 4, 1])
+                col1, col2, col3, col4 = st.columns([2, 4, 1, 1])
                 with col1:
                     st.markdown(f"**{promo['nombre_proyecto']}**")
                     st.caption(f"📅 {promo['mes']}")
@@ -214,9 +215,30 @@ if meses:
                     if promo.get('archivo_original'):
                         st.caption(f"📎 {promo['archivo_original']}")
                 with col3:
+                    if st.button("✏️", key=f"edit_{promo['id']}", help="Editar promocion"):
+                        st.session_state[f"editando_promo_{promo['id']}"] = True
+                        st.rerun()
+                with col4:
                     if st.button("🗑️", key=f"del_{promo['id']}", help="Eliminar promocion"):
                         delete_promocion(promo['id'])
                         st.rerun()
+
+            if st.session_state.get(f"editando_promo_{promo['id']}", False):
+                with st.container(border=True):
+                    st.markdown(f"#### ✏️ Editando promoción de **{promo['nombre_proyecto']}**")
+                    edit_desc = st.text_area("Descripción de la promoción", value=promo.get("descripcion_promocion", ""), key=f"e_desc_{promo['id']}")
+                    edit_mes = st.text_input("Mes", value=promo.get("mes", ""), key=f"e_mes_{promo['id']}")
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1:
+                        if st.button("💾 Guardar cambios", type="primary", key=f"save_promo_{promo['id']}", use_container_width=True):
+                            update_promocion(promo["id"], descripcion_promocion=edit_desc, mes=edit_mes)
+                            st.session_state[f"editando_promo_{promo['id']}"] = False
+                            st.success("✅ Promoción actualizada")
+                            st.rerun()
+                    with col_btn2:
+                        if st.button("❌ Cancelar", key=f"cancel_promo_{promo['id']}", use_container_width=True):
+                            st.session_state[f"editando_promo_{promo['id']}"] = False
+                            st.rerun()
     else:
         st.info("No hay promociones para el filtro seleccionado.")
 else:

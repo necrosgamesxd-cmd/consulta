@@ -180,6 +180,16 @@ def get_promociones_by_mes(mes):
     return [p for p in promociones if p["mes"] == mes]
 
 
+def update_promocion(promocion_id, **kwargs):
+    """Actualiza una promoción existente."""
+    promociones = get_promociones()
+    for p in promociones:
+        if p["id"] == promocion_id:
+            p.update(kwargs)
+            break
+    _guardar_json(PROMOCIONES_FILE, promociones)
+
+
 def delete_promocion(promocion_id):
     """Elimina una promoción por su ID."""
     promociones = get_promociones()
