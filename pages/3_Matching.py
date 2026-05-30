@@ -28,20 +28,6 @@ if not proyectos:
     st.warning("📋 No hay proyectos registrados. Ve a la sección **Proyectos** para agregar uno.")
     st.stop()
 
-# ===== SELECCIÓN DE MODELO =====
-st.markdown("### ⚙️ Modelo de IA")
-col_m1, col_m2 = st.columns([1, 3])
-with col_m1:
-    tier = st.radio(
-        "Modelo",
-        options=["super", "nano"],
-        format_func=lambda x: "Super (LLaMA 3.3 70B)" if x == "super" else "Nano (LLaMA 3.1 8B)",
-        index=0 if st.session_state.get("matching_tier", "super") == "super" else 1,
-        key="matching_tier",
-        horizontal=True,
-        help="Super: mayor calidad, más lento, más tokens. Nano: más rápido, menos tokens, calidad moderada.",
-    )
-
 # ===== SELECCIÓN DE CLIENTE =====
 st.markdown("### 1. Selecciona un cliente")
 cliente_options = {f"{c['nombre']} - {c.get('profesion', 'N/A')}": c for c in clientes}
@@ -281,7 +267,7 @@ if not st.session_state.chat_messages:
     if st.button("💬 Recomendar proyecto", type="primary", use_container_width=True):
         with st.chat_message("assistant"):
             with st.spinner("🤔 Analizando perfil del cliente y proyectos disponibles..."):
-                tier = st.session_state.get("matching_tier", "super")
+                tier = st.session_state.get("ai_tier", "super")
                 recomendacion = generar_recomendacion_inicial(cliente, proyectos, tier=tier)
             if recomendacion:
                 st.markdown(recomendacion)
@@ -317,7 +303,7 @@ if prompt:
                 elif m["role"] == "user":
                     messages_for_api.append({"role": m["role"], "content": m["content"]})
 
-            tier = st.session_state.get("matching_tier", "super")
+            tier = st.session_state.get("ai_tier", "super")
             response_text = ""
             response_placeholder = st.empty()
             try:

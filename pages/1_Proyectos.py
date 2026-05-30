@@ -67,7 +67,7 @@ with st.expander("➕ Agregar nuevo proyecto", expanded=False):
                         st.write("ℹ️ No se encontró información específica en la web")
 
                     st.write("🤖 Generando descripción con AI...")
-                    descripcion = generar_descripcion_con_ai(nombre_web, contexto_web or "")
+                    descripcion = generar_descripcion_con_ai(nombre_web, contexto_web or "", tier=st.session_state.get("ai_tier", "nano"))
 
                     if descripcion and not descripcion.startswith("Error"):
                         proyecto = add_proyecto(
@@ -131,7 +131,7 @@ with st.expander("➕ Agregar nuevo proyecto", expanded=False):
                     else:
                         st.write(f"✅ Texto extraído ({len(texto)} caracteres)")
                         st.write("🤖 Analizando con AI...")
-                        descripcion = analizar_pdf_con_ai(nombre_pdf, texto)
+                        descripcion = analizar_pdf_con_ai(nombre_pdf, texto, tier=st.session_state.get("ai_tier", "nano"))
 
                         if descripcion and not descripcion.startswith("Error"):
                             proyecto = add_proyecto(
@@ -451,7 +451,7 @@ else:
                                         # Aquí podríamos usar un pequeño prompt para extraer el precio
                                         pass 
 
-                        analisis_ai = analizar_cotizacion_con_ai(p['nombre'], new_cotizaciones)
+                        analisis_ai = analizar_cotizacion_con_ai(p['nombre'], new_cotizaciones, tier=st.session_state.get("ai_tier", "nano"))
                         update_proyecto(p['id'], cotizaciones=new_cotizaciones, analisis_cotizaciones=analisis_ai)
                     st.success("✅ Cotizaciones procesadas exitosamente")
                     st.rerun()

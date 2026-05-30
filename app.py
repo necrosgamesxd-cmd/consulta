@@ -246,7 +246,7 @@ with st.sidebar:
     st.markdown("---")
 
     # Selector de proveedor AI
-    from utils import verificar_api_key, PROVIDERS, get_provider_config
+    from utils import verificar_api_key, PROVIDERS, get_provider_config, get_model_for_provider
 
     provider_keys = list(PROVIDERS.keys())
     provider_labels = [PROVIDERS[p]["name"] for p in provider_keys]
@@ -274,6 +274,17 @@ with st.sidebar:
     else:
         st.success(f"✅ {config['name']} conectado", icon="✅")
 
+    # Selector de modelo (Super / Nano)
+    st.radio(
+        "Modelo",
+        options=["super", "nano"],
+        format_func=lambda x: f"Premium ({get_model_for_provider(x).split('/')[-1] or get_model_for_provider(x)})" if x == "super" else f"Rápido ({get_model_for_provider(x).split('/')[-1] or get_model_for_provider(x)})",
+        index=0 if st.session_state.get("ai_tier", "super") == "super" else 1,
+        key="ai_tier",
+        horizontal=True,
+        help="Premium: mayor calidad (70B). Rápido: menos tokens, más veloz (8B).",
+    )
+
     st.markdown("---")
     st.caption(f"Powered by {config['name']}")
 
@@ -285,10 +296,10 @@ with st.sidebar:
     completion = tok.get("completion", 0)
     st.markdown(f"**{total:,}** tokens totales")
     st.caption(f"⬆️ {prompt:,} enviados · ⬇️ {completion:,} recibidos")
-    limite_estimado = 1000000
+    limite_estimado = 1000000 if st.session_state.get("ai_tier", "super") == "super" else 5000000
     pct = min(total / limite_estimado, 1.0)
-    modelo_label = "70B" if st.session_state.get("matching_tier", "super") == "super" else "8B"
-    st.progress(pct, text=f"{pct*100:.1f}% del límite diario estimado ({modelo_label})")
+    modelo_label = "70B" if st.session_state.get("ai_tier", "super") == "super" else "8B"
+    st.progress(pct, text=f"{pct*100:.1f}% del límite diario ({modelo_label})")
     st.markdown("---")
 
     # ===== BACKUP / GIT =====

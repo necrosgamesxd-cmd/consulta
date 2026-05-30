@@ -95,7 +95,7 @@ if archivo_excel and nombre_mes:
             st.stop()
 
         st.write("🤖 Enviando a Nemotron Nano Omni para analisis...")
-        resultados = analizar_excel_promociones(texto_completo, nombre_mes)
+        resultados = analizar_excel_promociones(texto_completo, nombre_mes, tier=st.session_state.get("ai_tier", "nano"))
 
         if resultados is None:
             st.error("Error de conexion con el proveedor AI. Verifica tu API Key.")
