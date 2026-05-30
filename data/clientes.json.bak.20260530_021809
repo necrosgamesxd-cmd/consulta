@@ -48,31 +48,5 @@
     "deudas": [],
     "activos": [],
     "cuentas": []
-  },
-  {
-    "id": "e8b204a3-f679-4d30-a209-63c755e8a8af",
-    "created_at": "2026-05-30T02:18:09.080787",
-    "nombre": "hola",
-    "telefono": "",
-    "correo": "",
-    "rut": "",
-    "estado_civil": "Soltero/a",
-    "profesion": "",
-    "objetivo": "Vivir",
-    "sub_objetivo": null,
-    "direccion": "",
-    "ingresos": {
-      "renta": 0,
-      "dividendos": 0,
-      "pensiones": 0,
-      "arriendos": 0
-    },
-    "capacidad_inversion": {
-      "ahorro_pie": 0,
-      "cam": 0
-    },
-    "deudas": [],
-    "activos": [],
-    "cuentas": []
   }
 ]
