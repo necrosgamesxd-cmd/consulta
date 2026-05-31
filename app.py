@@ -118,6 +118,21 @@ st.markdown(
         box-shadow: 0 0 0 2px rgba(212,175,55,0.15) !important;
     }
 
+    div[data-baseweb="popover"] ul, div[data-baseweb="popover"] li[role="option"] {
+        background: #1e1e2e !important;
+    }
+    div[data-baseweb="popover"] li[role="option"]:hover {
+        background: rgba(212,175,55,0.15) !important;
+    }
+    div[data-baseweb="select"] li[role="option"], div[data-baseweb="multiselect"] li[role="option"] {
+        color: #ffffff !important;
+    }
+    div[data-baseweb="select"] ul, div[data-baseweb="multiselect"] ul {
+        background: #1e1e2e !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 8px !important;
+    }
+
     .stDateInput input, .stTimeInput input {
         background: rgba(255,255,255,0.05) !important;
         color: #ffffff !important;
